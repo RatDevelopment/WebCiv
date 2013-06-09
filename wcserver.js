@@ -7,8 +7,13 @@ var io = require('socket.io').listen(server);
 
 server.listen(1337);
 
-app.get('/', function (req, res) {
+app.get('/', function(req, res) {
   res.sendfile(__dirname + '/index.html');
+});
+
+app.get('/res/:type/:file', function(req, res) {
+	res.sendfile(__dirname + '/res/' + req.params.type 
+		+ '/' + req.params.file);
 });
 
 io.sockets.on('connection', function (socket) {
