@@ -22,14 +22,14 @@ function rotateUsingCamera(point, camera) {
 	var roty = step1.x*Math.sin(theta)+step1.y*Math.cos(theta);
 	var step2 = point2D(rotx, roty);
 	var step3 = translate(step2, camera);
-	return step2;
+	return step3;
 }
 
 function toIso(point, camera) {
 	var rotatedPoint = rotateUsingCamera(point, camera);
 	var dilutedPoint = verticalDilute(rotatedPoint, 2.5);
-	var isox = dilutedPoint.x;
-	var isoy = dilutedPoint.y;
+	var isox = Math.round(rotatedPoint.x);
+	var isoy = Math.round(rotatedPoint.y);
 	return point2D(isox, isoy);
 }
 
@@ -38,13 +38,17 @@ function generateGrid(cols, rows, tileSize, canvasId) {
 	var context = canvas.getContext('2d');
 	var width = cols*tileSize;
 	var height = rows*tileSize;
+	var sqrt3 = Math.sqrt(3);
+	var hexwidth = 2*tileSize/sqrt3;
+	var hexheight = tileSize;
+	var xdist = tileSize/sqrt3+hexwidth;
 	var camera = {
-		x: -10,
-		y: 10,
-		angle: 45
+		x: -1,
+		y: 1,
+		angle: 0
 	};
-	camera.x *= tileSize;
-	camera.y *= tileSize;
+	camera.x *= hexwidth;
+	camera.y *= hexheight;
 	context.beginPath();
 	// for (i = 0; i <= cols; i++) {
 	//	from = toIso(point2D(i*tileSize, 0), camera);
@@ -58,25 +62,21 @@ function generateGrid(cols, rows, tileSize, canvasId) {
 	//	context.moveTo(from.x, from.y);
 	//	context.lineTo(to.x, to.y);
 	// }
-	for (i = 0; i < cols/2; i++) {
+	for (i = 0; i < cols; i++) {
 		for (j = 0; j < rows; j++) {
-			var sqrt3 = Math.sqrt(3);
 			var xoffset = j % 2 === 1 ? 3*tileSize/(2*sqrt3) : 0;
-			var hexwidth = 2*tileSize/sqrt3;
-			var hexheight = tileSize;
-			var xdist = tileSize/sqrt3+hexwidth;
-			point1 = point2D(0+i*(xdist)+xoffset,
-				tileSize/2+j*tileSize/2);
-			point2 = point2D(tileSize/(2*sqrt3)+i*(xdist)+xoffset,
-				0+j*tileSize/2);
-			point3 = point2D(point2.x+tileSize/sqrt3,
-				0+j*tileSize/2);
-			point4 = point2D(hexwidth+i*(xdist)+xoffset,
-				tileSize/2+j*tileSize/2);
-			point5 = point2D(point2.x+tileSize/sqrt3,
-				tileSize+j*tileSize/2);
-			point6 = point2D(point2.x,
-				tileSize+j*tileSize/2);
+			point1 = toIso(point2D(i*xdist+xoffset,
+				tileSize/2+j*tileSize/2), camera);
+			point2 = toIso(point2D(tileSize/(2*sqrt3)+i*xdist+xoffset,
+				0+j*tileSize/2), camera);
+			point3 = toIso(point2D(point2.x+tileSize/sqrt3,
+				0+j*tileSize/2), camera);
+			point4 = toIso(point2D(hexwidth+i*xdist+xoffset,
+				tileSize/2+j*tileSize/2), camera);
+			point5 = toIso(point2D(point2.x+tileSize/sqrt3,
+				tileSize+j*tileSize/2), camera);
+			point6 = toIso(point2D(point2.x,
+				tileSize+j*tileSize/2), camera);
 			context.moveTo(point1.x, point1.y);
 			context.lineTo(point2.x, point2.y);
 			context.lineTo(point3.x, point3.y);
@@ -98,7 +98,7 @@ jQuery(function($){
 		var settings = {
 			rows: 10,
 			cols: 10,
-			tilesize: 32
+			tileSize: 32
 		};
 		// custom settings
 		$.extend(settings, options);
