@@ -12,8 +12,8 @@ app.get('/', function(req, res) {
 });
 
 app.get('/res/:type/:file', function(req, res) {
-	res.sendfile(__dirname + '/res/' + req.params.type 
-		+ '/' + req.params.file);
+	res.sendfile(__dirname + '/res/' + req.params.type +
+		'/' + req.params.file);
 });
 
 io.sockets.on('connection', function (socket) {

@@ -8,7 +8,7 @@ jQuery(function($){
 		};
 		// custom settings
 		$.extend(settings, options);
-		
+
 		// creating the canvas
 		var el = $(this);
 		el.html('<canvas id="tilelayer"></canvas>');
@@ -22,8 +22,8 @@ jQuery(function($){
 			translate: function(vector) {
 				// translate
 			}
-		}
+		};
 
 		return object;
-	}
+	};
 });
