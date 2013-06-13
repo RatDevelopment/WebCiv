@@ -11,6 +11,10 @@ function translate(point, translation) {
 	return point2D(point.x+translation.x, point.y+translation.y);
 }
 
+function verticalDilute(point, dilution) {
+	return point2D(point.x, point.y/dilution);
+}
+
 function rotateUsingCamera(point, camera) {
 	var step1 = translate(point, point2D(-1*camera.x, -1*camera.y));
 	var theta = camera.angle*Math.PI/180;
@@ -23,8 +27,9 @@ function rotateUsingCamera(point, camera) {
 
 function toIso(point, camera) {
 	var rotatedPoint = rotateUsingCamera(point, camera);
-	var isox = rotatedPoint.x;
-	var isoy = rotatedPoint.y;
+	var dilutedPoint = verticalDilute(rotatedPoint, 2.5);
+	var isox = dilutedPoint.x;
+	var isoy = dilutedPoint.y;
 	return point2D(isox, isoy);
 }
 
@@ -34,8 +39,8 @@ function generateGrid(cols, rows, tileSize, canvasId) {
 	var width = cols*tileSize;
 	var height = rows*tileSize;
 	var camera = {
-		x: -5,
-		y: 5,
+		x: -10,
+		y: 10,
 		angle: 45
 	};
 	camera.x *= tileSize;
