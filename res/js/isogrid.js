@@ -7,9 +7,24 @@ function point2D(x, y) {
 }
 
 // functions
+function translate(point, translation) {
+	return point2D(point.x+translation.x, point.y+translation.y);
+}
+
+function rotateUsingCamera(point, camera) {
+	var step1 = translate(point, point2D(-1*camera.x, -1*camera.y));
+	var theta = camera.angle*Math.PI/180;
+	var rotx = step1.x*Math.cos(theta)-step1.y*Math.sin(theta);
+	var roty = step1.x*Math.sin(theta)+step1.y*Math.cos(theta);
+	var step2 = point2D(rotx, roty);
+	var step3 = translate(step2, camera);
+	return step2;
+}
+
 function toIso(point, camera) {
-	var isox = point.x;
-	var isoy = point.y;
+	var rotatedPoint = rotateUsingCamera(point, camera);
+	var isox = rotatedPoint.x;
+	var isoy = rotatedPoint.y;
 	return point2D(isox, isoy);
 }
 
@@ -18,7 +33,13 @@ function generateGrid(cols, rows, tileSize, canvasId) {
 	var context = canvas.getContext('2d');
 	var width = cols*tileSize;
 	var height = rows*tileSize;
-	var camera = {};
+	var camera = {
+		x: -5,
+		y: 5,
+		angle: 45
+	};
+	camera.x *= tileSize;
+	camera.y *= tileSize;
 	context.beginPath();
 	for (i = 0; i <= cols; i++) {
 		from = toIso(point2D(i*tileSize, 0), camera);
