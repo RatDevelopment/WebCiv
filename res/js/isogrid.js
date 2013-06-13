@@ -46,17 +46,45 @@ function generateGrid(cols, rows, tileSize, canvasId) {
 	camera.x *= tileSize;
 	camera.y *= tileSize;
 	context.beginPath();
-	for (i = 0; i <= cols; i++) {
-		from = toIso(point2D(i*tileSize, 0), camera);
-		to = toIso(point2D(i*tileSize, height), camera);
-		context.moveTo(from.x, from.y);
-		context.lineTo(to.x, to.y);
-	}
-	for (i = 0; i <= rows; i++) {
-		from = toIso(point2D(0, i*tileSize), camera);
-		to = toIso(point2D(width, i*tileSize), camera);
-		context.moveTo(from.x, from.y);
-		context.lineTo(to.x, to.y);
+	// for (i = 0; i <= cols; i++) {
+	//	from = toIso(point2D(i*tileSize, 0), camera);
+	//	to = toIso(point2D(i*tileSize, height), camera);
+	//	context.moveTo(from.x, from.y);
+	//	context.lineTo(to.x, to.y);
+	// }
+	// for (i = 0; i <= rows; i++) {
+	//	from = toIso(point2D(0, i*tileSize), camera);
+	//	to = toIso(point2D(width, i*tileSize), camera);
+	//	context.moveTo(from.x, from.y);
+	//	context.lineTo(to.x, to.y);
+	// }
+	for (i = 0; i < cols/2; i++) {
+		for (j = 0; j < rows; j++) {
+			var sqrt3 = Math.sqrt(3);
+			var xoffset = j % 2 === 1 ? 3*tileSize/(2*sqrt3) : 0;
+			var hexwidth = 2*tileSize/sqrt3;
+			var hexheight = tileSize;
+			var xdist = tileSize/sqrt3+hexwidth;
+			point1 = point2D(0+i*(xdist)+xoffset,
+				tileSize/2+j*tileSize/2);
+			point2 = point2D(tileSize/(2*sqrt3)+i*(xdist)+xoffset,
+				0+j*tileSize/2);
+			point3 = point2D(point2.x+tileSize/sqrt3,
+				0+j*tileSize/2);
+			point4 = point2D(hexwidth+i*(xdist)+xoffset,
+				tileSize/2+j*tileSize/2);
+			point5 = point2D(point2.x+tileSize/sqrt3,
+				tileSize+j*tileSize/2);
+			point6 = point2D(point2.x,
+				tileSize+j*tileSize/2);
+			context.moveTo(point1.x, point1.y);
+			context.lineTo(point2.x, point2.y);
+			context.lineTo(point3.x, point3.y);
+			context.lineTo(point4.x, point4.y);
+			context.lineTo(point5.x, point5.y);
+			context.lineTo(point6.x, point6.y);
+			context.lineTo(point1.x, point1.y);
+		}
 	}
 	context.closePath();
 	context.stroke();
