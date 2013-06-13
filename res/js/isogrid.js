@@ -17,15 +17,15 @@ function verticalDilute(point, dilution) {
 
 function rotateUsingCamera(point, camera) {
 	var theta = camera.angle*Math.PI/180;
-	var rotx = point.x*Math.cos(theta)-step1.y*Math.sin(theta);
-	var roty = step1.x*Math.sin(theta)+step1.y*Math.cos(theta);
-	return step2;
+	var rotx = point.x*Math.cos(theta)-point.y*Math.sin(theta);
+	var roty = point.x*Math.sin(theta)+point.y*Math.cos(theta);
+	return point2D(rotx, roty);
 }
 
 function toIso(point, camera) {
-	// var rotatedPoint = rotateUsingCamera(point, camera);
-	var translatedPoint = translate(point, camera);
-	var dilutedPoint = verticalDilute(translatedPoint, 1.7);
+	var rotatedPoint = rotateUsingCamera(point, camera);
+	var translatedPoint = translate(rotatedPoint, camera);
+	var dilutedPoint = verticalDilute(translatedPoint, 2.3);
 	var isox = Math.round(dilutedPoint.x);
 	var isoy = Math.round(dilutedPoint.y);
 	return point2D(isox, isoy);
@@ -41,9 +41,9 @@ function generateGrid(cols, rows, tileSize, canvasId) {
 	var hexheight = tileSize;
 	var xdist = tileSize/sqrt3+hexwidth;
 	var camera = {
-		x: 0,
+		x: 6,
 		y: 0,
-		angle: 0
+		angle: 45
 	};
 	camera.x *= hexwidth;
 	camera.y *= hexheight;
@@ -67,13 +67,13 @@ function generateGrid(cols, rows, tileSize, canvasId) {
 				tileSize/2+j*tileSize/2), camera);
 			point2 = toIso(point2D(tileSize/(2*sqrt3)+i*xdist+xoffset,
 				0+j*tileSize/2), camera);
-			point3 = toIso(point2D(point2.x+tileSize/sqrt3,
+			point3 = toIso(point2D(tileSize/(2*sqrt3)+i*xdist+xoffset+tileSize/sqrt3,
 				0+j*tileSize/2), camera);
 			point4 = toIso(point2D(hexwidth+i*xdist+xoffset,
 				tileSize/2+j*tileSize/2), camera);
-			point5 = toIso(point2D(point2.x+tileSize/sqrt3,
+			point5 = toIso(point2D(tileSize/(2*sqrt3)+i*xdist+xoffset+tileSize/sqrt3,
 				tileSize+j*tileSize/2), camera);
-			point6 = toIso(point2D(point2.x,
+			point6 = toIso(point2D(tileSize/(2*sqrt3)+i*xdist+xoffset,
 				tileSize+j*tileSize/2), camera);
 			context.moveTo(point1.x, point1.y);
 			context.lineTo(point2.x, point2.y);
