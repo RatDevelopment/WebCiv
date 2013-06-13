@@ -16,20 +16,18 @@ function verticalDilute(point, dilution) {
 }
 
 function rotateUsingCamera(point, camera) {
-	var step1 = translate(point, point2D(-1*camera.x, -1*camera.y));
 	var theta = camera.angle*Math.PI/180;
-	var rotx = step1.x*Math.cos(theta)-step1.y*Math.sin(theta);
+	var rotx = point.x*Math.cos(theta)-step1.y*Math.sin(theta);
 	var roty = step1.x*Math.sin(theta)+step1.y*Math.cos(theta);
-	var step2 = point2D(rotx, roty);
-	var step3 = translate(step2, camera);
-	return step3;
+	return step2;
 }
 
 function toIso(point, camera) {
-	var rotatedPoint = rotateUsingCamera(point, camera);
-	var dilutedPoint = verticalDilute(rotatedPoint, 2.5);
-	var isox = Math.round(rotatedPoint.x);
-	var isoy = Math.round(rotatedPoint.y);
+	// var rotatedPoint = rotateUsingCamera(point, camera);
+	var translatedPoint = translate(point, camera);
+	var dilutedPoint = verticalDilute(translatedPoint, 1.7);
+	var isox = Math.round(dilutedPoint.x);
+	var isoy = Math.round(dilutedPoint.y);
 	return point2D(isox, isoy);
 }
 
@@ -43,24 +41,24 @@ function generateGrid(cols, rows, tileSize, canvasId) {
 	var hexheight = tileSize;
 	var xdist = tileSize/sqrt3+hexwidth;
 	var camera = {
-		x: -1,
-		y: 1,
+		x: 0,
+		y: 0,
 		angle: 0
 	};
 	camera.x *= hexwidth;
 	camera.y *= hexheight;
 	context.beginPath();
 	// for (i = 0; i <= cols; i++) {
-	//	from = toIso(point2D(i*tileSize, 0), camera);
-	//	to = toIso(point2D(i*tileSize, height), camera);
-	//	context.moveTo(from.x, from.y);
-	//	context.lineTo(to.x, to.y);
+	// 	from = toIso(point2D(i*tileSize, 0), camera);
+	// 	to = toIso(point2D(i*tileSize, height), camera);
+	// 	context.moveTo(from.x, from.y);
+	// 	context.lineTo(to.x, to.y);
 	// }
 	// for (i = 0; i <= rows; i++) {
-	//	from = toIso(point2D(0, i*tileSize), camera);
-	//	to = toIso(point2D(width, i*tileSize), camera);
-	//	context.moveTo(from.x, from.y);
-	//	context.lineTo(to.x, to.y);
+	// 	from = toIso(point2D(0, i*tileSize), camera);
+	// 	to = toIso(point2D(width, i*tileSize), camera);
+	// 	context.moveTo(from.x, from.y);
+	// 	context.lineTo(to.x, to.y);
 	// }
 	for (i = 0; i < cols; i++) {
 		for (j = 0; j < rows; j++) {
