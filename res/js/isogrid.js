@@ -24,14 +24,14 @@ function rotateUsingCamera(point, camera) {
 
 function toIso(point, camera) {
 	var rotatedPoint = rotateUsingCamera(point, camera);
-	var translatedPoint = translate(rotatedPoint, camera);
-	var dilutedPoint = verticalDilute(translatedPoint, 1.9);
-	var isox = Math.round(dilutedPoint.x);
-	var isoy = Math.round(dilutedPoint.y);
+	var dilutedPoint = verticalDilute(rotatedPoint, 1.9);
+	var translatedPoint = translate(dilutedPoint, camera);
+	var isox = Math.round(translatedPoint.x);
+	var isoy = Math.round(translatedPoint.y);
 	return point2D(isox, isoy);
 }
 
-function drawGrid(cols, rows, tileSize, canvasId) {
+function drawGrid(cols, rows, tileSize, canvasId, camera) {
 	var docwidth = $(window).width()-5;
 	var docheight = $(window).height()-5;
 	var canvas = document.getElementById(canvasId);
@@ -44,13 +44,6 @@ function drawGrid(cols, rows, tileSize, canvasId) {
 	var hexwidth = 2*tileSize/sqrt3;
 	var hexheight = tileSize;
 	var xdist = tileSize/sqrt3+hexwidth;
-	var camera = {
-		x: 0,
-		y: 0,
-		angle: 45
-	};
-	camera.x *= hexwidth;
-	camera.y *= hexheight;
 	context.beginPath();
 	for (i = 0; i < cols; i++) {
 		for (j = 0; j < rows; j++) {
@@ -87,8 +80,27 @@ jQuery(function($){
 		var settings = {
 			rows: 10,
 			cols: 10,
-			tileSize: 32
+			tileSize: 32,
+			camera: {
+				x: 0,
+				y: 0,
+				angle: 45
+			}
 		};
+
+		// object will contain methods to interact with the grid
+		var object = {
+			update: function(data) {
+				// update
+			},
+			translate: function(vector) {
+				// translate
+			},
+			redraw: function() {
+				drawGrid(settings.cols, settings.rows, settings.tileSize, elid, settings.camera);
+			}
+		};
+
 		// custom settings
 		$.extend(settings, options);
 
@@ -99,23 +111,43 @@ jQuery(function($){
 		var tileLayer = $('#game');
 
 		// generate grid
-		drawGrid(settings.cols, settings.rows, settings.tileSize, elid);
+		object.redraw();
+
+		// mouse pan handler
+		var mouseIsDown = false;
+		var mousedownx = 0;
+		var mousedowny = 0;
+		var mousedowncam = {};
+		$(document).mousedown(function(e) {
+			mouseIsDown = true;
+			el.css('cursor', 'move');
+			mousedownx = e.pageX;
+			mousedowny = e.pageY;
+			mousedowncam = {
+				x: settings.camera.x,
+				y: settings.camera.y
+			};
+		});
+		$(document).mouseup(function() {
+			mouseIsDown = false;
+			el.css('cursor', 'default');
+		});
+		$(document).mousemove(function(e) {
+			if (mouseIsDown) {
+				var mousex = e.pageX;
+				var mousey = e.pageY;
+				var newx = mousedowncam.x + mousex - mousedownx;
+				var newy = mousedowncam.y + mousey - mousedowny;
+				settings.camera.x = newx;
+				settings.camera.y = newy;
+				object.redraw();
+			}
+		});
 
 		// resize handler
 		$(window).resize(function() {
-			console.log("yolo");
-			drawGrid(settings.cols, settings.rows, settings.tileSize, elid);
+			object.redraw();
 		});
-
-		// object will contain methods to interact with the grid
-		var object = {
-			update: function(data) {
-				// update
-			},
-			translate: function(vector) {
-				// translate
-			}
-		};
 
 		return object;
 	};
