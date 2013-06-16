@@ -1,9 +1,9 @@
 body {
 	padding: 0;
 	margin: 0;
-    -webkit-touch-callout: none;
-    -webkit-user-select: none;
-    -ms-user-select: none;
-    -moz-user-select: none;
-    user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
 }

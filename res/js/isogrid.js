@@ -41,24 +41,26 @@ function drawGrid(cols, rows, tileSize, canvasId, camera) {
 	var width = cols*tileSize;
 	var height = rows*tileSize;
 	var sqrt3 = Math.sqrt(3);
-	var hexwidth = 2*tileSize/sqrt3;
+	var sidewidth = tileSize/sqrt3;
+	var hexwidth = 2*sidewidth;
 	var hexheight = tileSize;
-	var xdist = tileSize/sqrt3+hexwidth;
+	var xdist = sidewidth+hexwidth;
 	context.beginPath();
 	for (i = 0; i < cols; i++) {
 		for (j = 0; j < rows; j++) {
 			var xoffset = j % 2 === 1 ? 3*tileSize/(2*sqrt3) : 0;
+			var const1 = tileSize/(2*sqrt3)+i*xdist+xoffset;
 			point1 = toIso(point2D(i*xdist+xoffset,
 				tileSize/2+j*tileSize/2), camera);
-			point2 = toIso(point2D(tileSize/(2*sqrt3)+i*xdist+xoffset,
+			point2 = toIso(point2D(const1,
 				0+j*tileSize/2), camera);
-			point3 = toIso(point2D(tileSize/(2*sqrt3)+i*xdist+xoffset+tileSize/sqrt3,
+			point3 = toIso(point2D(const1+sidewidth,
 				0+j*tileSize/2), camera);
 			point4 = toIso(point2D(hexwidth+i*xdist+xoffset,
 				tileSize/2+j*tileSize/2), camera);
-			point5 = toIso(point2D(tileSize/(2*sqrt3)+i*xdist+xoffset+tileSize/sqrt3,
+			point5 = toIso(point2D(const1+sidewidth,
 				tileSize+j*tileSize/2), camera);
-			point6 = toIso(point2D(tileSize/(2*sqrt3)+i*xdist+xoffset,
+			point6 = toIso(point2D(const1,
 				tileSize+j*tileSize/2), camera);
 			context.moveTo(point1.x, point1.y);
 			context.lineTo(point2.x, point2.y);
