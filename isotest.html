@@ -2,14 +2,21 @@
 <html>
 	<head>
 		<title>WebCiv</title>
+		<link rel="stylesheet" type="text/css" href="res/css/style.css">
 		<script src="res/lib/jquery.min.js"></script>
 		<script src="res/js/matrixmath.js"></script>
 		<script src="res/js/isogrid.js"></script>
 	</head>
 	<body>
-		<canvas width="1200" height="800" id="test"></canvas>
+		<canvas id="test"></canvas>
 		<script>
-			generateGrid(4,10,128,"test");
+			jQuery(function($) {
+				$("#test").isogrid({
+					rows: 5,
+					cols: 5,
+					tileSize: 128
+				})
+			});
 		</script>
 	</body>
 </html>

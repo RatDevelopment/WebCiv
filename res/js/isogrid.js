@@ -31,8 +31,12 @@ function toIso(point, camera) {
 	return point2D(isox, isoy);
 }
 
-function generateGrid(cols, rows, tileSize, canvasId) {
+function drawGrid(cols, rows, tileSize, canvasId) {
+	var docwidth = $(window).width()-5;
+	var docheight = $(window).height()-5;
 	var canvas = document.getElementById(canvasId);
+	$('#' + canvasId).attr("width", docwidth);
+	$('#' + canvasId).attr("height", docheight);
 	var context = canvas.getContext('2d');
 	var width = cols*tileSize;
 	var height = rows*tileSize;
@@ -41,25 +45,13 @@ function generateGrid(cols, rows, tileSize, canvasId) {
 	var hexheight = tileSize;
 	var xdist = tileSize/sqrt3+hexwidth;
 	var camera = {
-		x: 3,
+		x: 0,
 		y: 0,
 		angle: 45
 	};
 	camera.x *= hexwidth;
 	camera.y *= hexheight;
 	context.beginPath();
-	// for (i = 0; i <= cols; i++) {
-	// 	from = toIso(point2D(i*tileSize, 0), camera);
-	// 	to = toIso(point2D(i*tileSize, height), camera);
-	// 	context.moveTo(from.x, from.y);
-	// 	context.lineTo(to.x, to.y);
-	// }
-	// for (i = 0; i <= rows; i++) {
-	// 	from = toIso(point2D(0, i*tileSize), camera);
-	// 	to = toIso(point2D(width, i*tileSize), camera);
-	// 	context.moveTo(from.x, from.y);
-	// 	context.lineTo(to.x, to.y);
-	// }
 	for (i = 0; i < cols; i++) {
 		for (j = 0; j < rows; j++) {
 			var xoffset = j % 2 === 1 ? 3*tileSize/(2*sqrt3) : 0;
@@ -88,7 +80,6 @@ function generateGrid(cols, rows, tileSize, canvasId) {
 	context.stroke();
 }
 
-
 // $.fn.isogrid implementation
 jQuery(function($){
 	$.fn.isogrid = function(options) {
@@ -103,8 +94,18 @@ jQuery(function($){
 
 		// creating the canvas
 		var el = $(this);
-		el.html('<canvas id="tilelayer"></canvas>');
-		var tileLayer = $('#tilelayer');
+		var elid = $(this).attr('id');
+		el.html('<canvas id="game"></canvas>');
+		var tileLayer = $('#game');
+
+		// generate grid
+		drawGrid(settings.cols, settings.rows, settings.tileSize, elid);
+
+		// resize handler
+		$(window).resize(function() {
+			console.log("yolo");
+			drawGrid(settings.cols, settings.rows, settings.tileSize, elid);
+		});
 
 		// object will contain methods to interact with the grid
 		var object = {
