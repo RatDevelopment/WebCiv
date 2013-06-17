@@ -24,7 +24,7 @@ function rotateUsingCamera(point, camera) {
 
 function toIso(point, camera) {
 	var rotatedPoint = rotateUsingCamera(point, camera);
-	var dilutedPoint = verticalDilute(rotatedPoint, 1.9);
+	var dilutedPoint = verticalDilute(rotatedPoint, camera.dilution);
 	var translatedPoint = translate(dilutedPoint, camera);
 	var isox = Math.round(translatedPoint.x);
 	var isoy = Math.round(translatedPoint.y);
@@ -32,7 +32,7 @@ function toIso(point, camera) {
 }
 
 function drawGrid(cols, rows, tileSize, canvasId, camera) {
-	var docwidth = $(window).width()-5;
+	var docwidth = $(window).width();
 	var docheight = $(window).height()-5;
 	var canvas = document.getElementById(canvasId);
 	$('#' + canvasId).attr("width", docwidth);
@@ -86,7 +86,8 @@ jQuery(function($){
 			camera: {
 				x: 0,
 				y: 0,
-				angle: 45
+				angle: 30,
+				dilution: 1.3
 			}
 		};
 
