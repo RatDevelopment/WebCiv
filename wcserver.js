@@ -14,8 +14,8 @@ var userSchema = mongoose.Schema({
 	name: String,
 	id: String
 });
-userSchema.statics.findByID = function(id, callback) {
-	this.find({id: new RegExp(id, 'i')}, callback);
+userSchema.statics.removeByID = function(id, callback) {
+	this.findOne({id: new RegExp(id, 'i')}, callback).remove();
 };
 
 // mongoose models
@@ -49,9 +49,9 @@ io.sockets.on('connection', function (socket) {
 	});
 	socket.on('disconnect', function() {
 		// find user name in mongo based on socket.id
-		User.findByID(socket.id, function(err, data) {
+		User.removeByID(socket.id, function(err, data) {
 			socket.broadcast.emit('message', {
-				message: data[0].name + ' has diconnected.'
+				message: data.name + ' has diconnected.'
 			});
 		});
 	});
