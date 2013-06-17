@@ -31,15 +31,18 @@ app.get('/res/:type/:file', function(req, res) {
 	'/' + req.params.file);
 });
 
+// socket functions
+function broadcastMessage(socket, message) {
+	socket.broadcast.emit('message', {
+		message: message
+	});
+}
+
 // socket management
 io.sockets.on('connection', function (socket) {
-	socket.broadcast.emit('message', {
-		message: 'A new player has joined.'
-	});
+	broadcastMessage(socket, 'A new player has joined.');
 	socket.on('name chosen', function (data) {
-		socket.broadcast.emit('message', {
-			message: data.name + ' has joined.'
-		});
+		broadcastMessage(socket, data.name + ' has joined.');
 		// associate data.name with socket.id in mongodb
 		var user = new User({
 			name: data.name,
@@ -50,9 +53,11 @@ io.sockets.on('connection', function (socket) {
 	socket.on('disconnect', function() {
 		// find user name in mongo based on socket.id
 		User.removeByID(socket.id, function(err, data) {
-			socket.broadcast.emit('message', {
-				message: data.name + ' has diconnected.'
-			});
+			if (data === null) {
+				broadcastMessage(socket, 'An unnamed player has diconnected.');
+			} else {
+				broadcastMessage(socket, data.name + ' has disconnected.');
+			}
 		});
 	});
 });
