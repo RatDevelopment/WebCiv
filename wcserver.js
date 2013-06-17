@@ -8,7 +8,7 @@ var io = require('socket.io').listen(server);
 server.listen(1337);
 
 app.get('/', function(req, res) {
-  res.sendfile(__dirname + '/index.html');
+	res.sendfile(__dirname + '/index.html');
 });
 
 app.get('/res/:type/:file', function(req, res) {
@@ -17,12 +17,12 @@ app.get('/res/:type/:file', function(req, res) {
 });
 
 io.sockets.on('connection', function (socket) {
-  socket.broadcast.emit('message', {
+	socket.broadcast.emit('message', {
 		message: 'A new player has joined.'
-  });
-  socket.on('name chosen', function (data) {
+	});
+	socket.on('name chosen', function (data) {
 		socket.broadcast.emit('message', {
 			message: data.name + ' has joined.'
 		});
-  });
+	});
 });
