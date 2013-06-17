@@ -23,8 +23,7 @@ function rotateUsingCamera(point, camera) {
 }
 
 function toIso(point, camera) {
-	var rotatedPoint = rotateUsingCamera(point, camera);
-	var dilutedPoint = verticalDilute(rotatedPoint, camera.dilution);
+	var dilutedPoint = verticalDilute(point, camera.dilution);
 	var translatedPoint = translate(dilutedPoint, camera);
 	var isox = Math.round(translatedPoint.x);
 	var isoy = Math.round(translatedPoint.y);
@@ -41,27 +40,24 @@ function drawGrid(cols, rows, tileSize, canvasId, camera) {
 	var width = cols*tileSize;
 	var height = rows*tileSize;
 	var sqrt3 = Math.sqrt(3);
-	var sidewidth = tileSize/sqrt3;
-	var hexwidth = 2*sidewidth;
-	var hexheight = tileSize;
-	var xdist = sidewidth+hexwidth;
+	var sidelength = tileSize/sqrt3;
+	var hexheight = 2*sidelength;
 	context.beginPath();
 	for (i = 0; i < cols; i++) {
 		for (j = 0; j < rows; j++) {
-			var xoffset = j % 2 === 1 ? 3*tileSize/(2*sqrt3) : 0;
-			var const1 = tileSize/(2*sqrt3)+i*xdist+xoffset;
-			point1 = toIso(point2D(i*xdist+xoffset,
-				tileSize/2+j*tileSize/2), camera);
-			point2 = toIso(point2D(const1,
-				0+j*tileSize/2), camera);
-			point3 = toIso(point2D(const1+sidewidth,
-				0+j*tileSize/2), camera);
-			point4 = toIso(point2D(hexwidth+i*xdist+xoffset,
-				tileSize/2+j*tileSize/2), camera);
-			point5 = toIso(point2D(const1+sidewidth,
-				tileSize+j*tileSize/2), camera);
-			point6 = toIso(point2D(const1,
-				tileSize+j*tileSize/2), camera);
+			var xoffset = j % 2 === 1 ? tileSize/2 : 0;
+			var point1 = toIso(point2D(xoffset + i*tileSize,
+				sidelength/2 + j*3*sidelength/2), camera);
+			var point2 = toIso(point2D(xoffset + tileSize/2 + i*tileSize,
+				j*3*sidelength/2), camera);
+			var point3 = toIso(point2D(xoffset + tileSize + i*tileSize,
+				sidelength/2 + j*3*sidelength/2), camera);
+			var point4 = toIso(point2D(xoffset + tileSize + i*tileSize,
+				3*sidelength/2 + j*3*sidelength/2), camera);
+			var point5 = toIso(point2D(xoffset + tileSize/2 + i*tileSize,
+				hexheight + j*3*sidelength/2), camera);
+			var point6 = toIso(point2D(xoffset + i*tileSize,
+				3*sidelength/2 + j*3*sidelength/2), camera);
 			context.moveTo(point1.x, point1.y);
 			context.lineTo(point2.x, point2.y);
 			context.lineTo(point3.x, point3.y);
@@ -86,8 +82,8 @@ jQuery(function($){
 			camera: {
 				x: 0,
 				y: 0,
-				angle: 30,
-				dilution: 1.3
+				angle: 0,
+				dilution: 1.4
 			}
 		};
 
