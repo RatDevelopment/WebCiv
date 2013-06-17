@@ -17,9 +17,17 @@ var userSchema = mongoose.Schema({
 userSchema.statics.removeByID = function(id, callback) {
 	this.findOne({id: new RegExp(id, 'i')}, callback).remove();
 };
+userSchema.statics.findByID = function(id, callback) {
+	this.findOne({id: new RegExp(id, 'i')}, callback);
+};
+var lobbySchema = mongoose.Schema({
+	name: String,
+	users: Array
+});
 
 // mongoose models
 var User = mongoose.model('User', userSchema);
+var Lobby = mongoose.model('Lobby', lobbySchema);
 
 // express routing
 app.get('/', function(req, res) {
@@ -37,6 +45,17 @@ function broadcastMessage(socket, message) {
 		message: message
 	});
 }
+function broadcastLobbiesUpdated(socket) {
+	Lobby.find({}, (function(err, data) {
+		if (!err) {
+			socket.broadcast.emit('lobbies updated', {
+				lobbies: data
+			});
+		} else {
+			console.log('error');
+		}
+	}));
+}
 
 // socket management
 io.sockets.on('connection', function (socket) {
@@ -50,6 +69,20 @@ io.sockets.on('connection', function (socket) {
 		});
 		user.save();
 	});
+
+	socket.on('new lobby', function(data) {
+		User.findByID(socket.id, function(err, data) {
+			var lobbyName = data.name + "'s lobby";
+			var lobby = new Lobby({
+				name: lobbyName,
+				users: [socket.id]
+			});
+			lobby.save(function() {
+				broadcastLobbiesUpdated(socket);
+			});
+		});
+	});
+
 	socket.on('disconnect', function() {
 		// find user name in mongo based on socket.id
 		User.removeByID(socket.id, function(err, data) {
