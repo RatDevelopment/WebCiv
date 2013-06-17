@@ -8,7 +8,8 @@ socket.on('message', function (data) {
 jQuery(function($) {
 	$('#nameform').submit(function() {
 		var name = $('#nameinput').val();
-		$('#content').html('<div id="lobbies"></div><div id="messages"></div>');
+		$('#content').html('<div id="lobbies"></div>' +
+			'<div id="messages"></div>');
 		socket.emit('name chosen', {
 			name: name
 		});
