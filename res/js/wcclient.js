@@ -1,6 +1,17 @@
 var socket = io.connect(document.host);
 
-socket.on('news', function (data) {
-	console.log(data);
-	socket.emit('my other event', { my: 'data' });
+socket.on('message', function (data) {
+	console.log(data.message);
+	$('#messages').append(data.message + '<br>');
+});
+
+jQuery(function($) {
+	$('#nameform').submit(function() {
+		var name = $('#nameinput').val();
+		$('#content').html('<div id="messages"></div>');
+		socket.emit('name chosen', {
+			name: name
+		});
+		return false;
+	});
 });
