@@ -5,7 +5,10 @@ socket.on('message', function (data) {
 });
 
 socket.on('lobbies updated', function (data) {
-	console.log(JSON.stringify(data));
+	$('#lobbies').html('');
+	$.each(data.lobbies, function(index, value) {
+		$('#lobbies').append('<p><strong>' + value.name + '</strong></p>');
+	});
 });
 
 jQuery(function($) {

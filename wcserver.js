@@ -44,11 +44,17 @@ function broadcastMessage(socket, message) {
 	socket.broadcast.emit('message', {
 		message: message
 	});
+	socket.emit('message', {
+		message: message
+	});
 }
 function broadcastLobbiesUpdated(socket) {
 	Lobby.find({}, (function(err, data) {
 		if (!err) {
 			socket.broadcast.emit('lobbies updated', {
+				lobbies: data
+			});
+			socket.emit('lobbies updated', {
 				lobbies: data
 			});
 		} else {
