@@ -1,19 +1,29 @@
 <!doctype html>
-<html>
+<html ng-app="wc">
 	<head>
 		<title>WebCiv</title>
 		<script src="res/lib/jquery.min.js"></script>
 		<script src="res/lib/angular.min.js"></script>
 		<script src="/socket.io/socket.io.js"></script>
-		<script src="res/js/wcclient.js">
-		</script>
+		<script src="res/js/app.js"></script>
+		<script src="res/js/services.js"></script>
+		<script src="res/js/controllers.js"></script>
+		<script src="res/js/wcclient.js"></script>
 	</head>
 	<body>
 		<div id="content">
 			<form id="nameform">
-				Enter a nickname: <input type="text" id="nameinput">
+				Enter a nickname: <input type="text" id="nameinput" ng-model="name">
 				<input type="submit" id="namesubmit">
 			</form>
+			<h1>{{ name }}</h1>
+		</div>
+		<div id="content2" style="display: none;">
+			<button id="newlobby">New Lobby</button>
+			<div id="lobbies" ng-controller="LobbyController">
+				<p ng-repeat="lobby in lobbies">{{ lobby.name }}</p>
+			</div>
+			<div id="messages"></div>
 		</div>
 	</body>
 </html>
