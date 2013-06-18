@@ -10,7 +10,7 @@
 		<script src="res/js/controllers.js"></script>
 		<script src="res/js/wcclient.js"></script>
 	</head>
-	<body>
+	<body ng-controller="WCController">
 		<div id="content">
 			<form id="nameform">
 				Enter a nickname: <input type="text" id="nameinput" ng-model="name">
@@ -20,10 +20,10 @@
 		</div>
 		<div id="content2" style="display: none;">
 			<button id="newlobby">New Lobby</button>
-			<div id="lobbies" ng-controller="LobbyController">
+			<div id="lobbies">
 				<p ng-repeat="lobby in lobbies">{{ lobby.name }}</p>
 			</div>
-			<div id="messages"></div>
+			<div ng-repeat="message in messages">{{ message }}</div>
 		</div>
 	</body>
 </html>
