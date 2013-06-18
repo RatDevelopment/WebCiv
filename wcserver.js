@@ -48,13 +48,13 @@ function broadcastMessage(socket, message) {
 		message: message
 	});
 }
-function broadcastLobbiesUpdated(socket) {
+function broadcastLobbies(socket) {
 	Lobby.find({}, (function(err, data) {
 		if (!err) {
-			socket.broadcast.emit('lobbies updated', {
+			socket.broadcast.emit('lobbies', {
 				lobbies: data
 			});
-			socket.emit('lobbies updated', {
+			socket.emit('lobbies', {
 				lobbies: data
 			});
 		} else {
@@ -66,6 +66,7 @@ function broadcastLobbiesUpdated(socket) {
 // socket management
 io.sockets.on('connection', function (socket) {
 	broadcastMessage(socket, 'A new player has joined.');
+
 	socket.on('name chosen', function (data) {
 		broadcastMessage(socket, data.name + ' has joined.');
 		// associate data.name with socket.id in mongodb
@@ -74,6 +75,7 @@ io.sockets.on('connection', function (socket) {
 			id: socket.id
 		});
 		user.save();
+		broadcastLobbies(socket);
 	});
 
 	socket.on('new lobby', function(data) {
@@ -84,7 +86,7 @@ io.sockets.on('connection', function (socket) {
 				users: [socket.id]
 			});
 			lobby.save(function() {
-				broadcastLobbiesUpdated(socket);
+				broadcastLobbies(socket);
 			});
 		});
 	});

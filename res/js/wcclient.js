@@ -4,7 +4,7 @@ socket.on('message', function (data) {
 	$('#messages').append(data.message + '<br>');
 });
 
-socket.on('lobbies updated', function (data) {
+socket.on('lobbies', function (data) {
 	$('#lobbies').html('');
 	$.each(data.lobbies, function(index, value) {
 		$('#lobbies').append('<p><strong>' + value.name + '</strong></p>');
