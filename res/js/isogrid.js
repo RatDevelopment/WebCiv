@@ -6,6 +6,17 @@ function point2D(x, y) {
 	return result;
 }
 
+function sprite(src) {
+	var img = new Image();
+	img.src = src;
+	return img;
+}
+
+// sprites
+var sprites = {
+	ground: sprite('res/img/ground.png')
+};
+
 // functions
 function translate(point, translation) {
 	return point2D(point.x+translation.x, point.y+translation.y);
@@ -43,9 +54,13 @@ function drawGrid(cols, rows, tileSize, canvasId, camera) {
 	var sidelength = tileSize/sqrt3;
 	var hexheight = 2*sidelength;
 	context.beginPath();
+	context.strokeStyle="#ffffff";
 	for (i = 0; i < cols; i++) {
 		for (j = 0; j < rows; j++) {
 			var xoffset = j % 2 === 1 ? tileSize/2 : 0;
+			var spritePoint = toIso(point2D(xoffset + i*tileSize,
+				j*3*sidelength/2), camera);
+			context.drawImage(sprites.ground, spritePoint.x, spritePoint.y);
 			var point1 = toIso(point2D(xoffset + i*tileSize,
 				sidelength/2 + j*3*sidelength/2), camera);
 			var point2 = toIso(point2D(xoffset + tileSize/2 + i*tileSize,
@@ -87,6 +102,13 @@ jQuery(function($){
 			}
 		};
 
+		function init() {
+			// generate grid
+			object.redraw();
+		}
+
+		sprites.ground.onload = init;
+
 		// object will contain methods to interact with the grid
 		var object = {
 			update: function(data) {
@@ -108,9 +130,6 @@ jQuery(function($){
 		var elid = $(this).attr('id');
 		el.html('<canvas id="game"></canvas>');
 		var tileLayer = $('#game');
-
-		// generate grid
-		object.redraw();
 
 		// mouse pan handler
 		var mouseIsDown = false;
@@ -147,6 +166,8 @@ jQuery(function($){
 		$(window).resize(function() {
 			object.redraw();
 		});
+
+		init();
 
 		return object;
 	};
