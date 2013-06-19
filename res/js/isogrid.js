@@ -27,13 +27,6 @@ function verticalDilute(point, dilution) {
 	return point2D(point.x, point.y/dilution);
 }
 
-function rotateUsingCamera(point, camera) {
-	var theta = camera.angle*Math.PI/180;
-	var rotx = point.x*Math.cos(theta)-point.y*Math.sin(theta);
-	var roty = point.x*Math.sin(theta)+point.y*Math.cos(theta);
-	return point2D(rotx, roty);
-}
-
 function toIso(point, camera) {
 	var dilutedPoint = verticalDilute(point, camera.dilution);
 	var translatedPoint = translate(dilutedPoint, camera);
@@ -69,17 +62,18 @@ jQuery(function($){
 			camera: {
 				x: 0,
 				y: 0,
-				angle: 0,
 				dilution: 1.4
 			}
 		};
 
+		// custom settings
+		$.extend(settings, options);
+
+		// initialize grid
 		function init() {
 			// generate grid
 			object.redraw();
 		}
-
-		sprites.ground.onload = init;
 
 		// object will contain methods to interact with the grid
 		var object = {
@@ -93,9 +87,6 @@ jQuery(function($){
 				drawGrid(settings.map, settings.tileSize, elid, settings.camera);
 			}
 		};
-
-		// custom settings
-		$.extend(settings, options);
 
 		// creating the canvas
 		var el = $(this);
@@ -139,7 +130,8 @@ jQuery(function($){
 			object.redraw();
 		});
 
-		init();
+		// init on load image
+		sprites.ground.onload = init;
 
 		return object;
 	};
