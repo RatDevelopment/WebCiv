@@ -37,8 +37,8 @@ function rotateUsingCamera(point, camera) {
 function toIso(point, camera) {
 	var dilutedPoint = verticalDilute(point, camera.dilution);
 	var translatedPoint = translate(dilutedPoint, camera);
-	var isox = Math.round(translatedPoint.x);
-	var isoy = Math.round(translatedPoint.y);
+	var isox = Math.floor(translatedPoint.x);
+	var isoy = Math.floor(translatedPoint.y);
 	return point2D(isox, isoy);
 }
 
