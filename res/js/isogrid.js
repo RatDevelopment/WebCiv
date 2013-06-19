@@ -64,7 +64,7 @@ jQuery(function($){
 	$.fn.isogrid = function(options) {
 		// settings
 		var settings = {
-			map: {map:{}},
+			map: {},
 			tileSize: 128,
 			camera: {
 				x: 0,
