@@ -8,13 +8,14 @@ function point2D(x, y) {
 
 function sprite(src) {
 	var img = new Image();
-	img.src = src;
+	img.src = 'res/img/' + src;
 	return img;
 }
 
 // sprites
 var sprites = {
-	ground: sprite('res/img/ground.png')
+	ground: sprite('ground.png'),
+	water: sprite('water.png')
 };
 
 // functions
@@ -41,49 +42,21 @@ function toIso(point, camera) {
 	return point2D(isox, isoy);
 }
 
-function drawGrid(cols, rows, tileSize, canvasId, camera) {
+function drawGrid(map, tileSize, canvasId, camera) {
 	var docwidth = $(window).width();
 	var docheight = $(window).height()-5;
 	var canvas = document.getElementById(canvasId);
 	$('#' + canvasId).attr("width", docwidth);
 	$('#' + canvasId).attr("height", docheight);
 	var context = canvas.getContext('2d');
-	var width = cols*tileSize;
-	var height = rows*tileSize;
-	var sqrt3 = Math.sqrt(3);
-	var sidelength = tileSize/sqrt3;
-	var hexheight = 2*sidelength;
-	context.beginPath();
-	context.strokeStyle="#ffffff";
-	for (i = 0; i < cols; i++) {
-		for (j = 0; j < rows; j++) {
-			var xoffset = j % 2 === 1 ? tileSize/2 : 0;
-			var spritePoint = toIso(point2D(xoffset + i*tileSize,
-				j*3*sidelength/2), camera);
-			context.drawImage(sprites.ground, spritePoint.x, spritePoint.y);
-			var point1 = toIso(point2D(xoffset + i*tileSize,
-				sidelength/2 + j*3*sidelength/2), camera);
-			var point2 = toIso(point2D(xoffset + tileSize/2 + i*tileSize,
-				j*3*sidelength/2), camera);
-			var point3 = toIso(point2D(xoffset + tileSize + i*tileSize,
-				sidelength/2 + j*3*sidelength/2), camera);
-			var point4 = toIso(point2D(xoffset + tileSize + i*tileSize,
-				3*sidelength/2 + j*3*sidelength/2), camera);
-			var point5 = toIso(point2D(xoffset + tileSize/2 + i*tileSize,
-				hexheight + j*3*sidelength/2), camera);
-			var point6 = toIso(point2D(xoffset + i*tileSize,
-				3*sidelength/2 + j*3*sidelength/2), camera);
-			context.moveTo(point1.x, point1.y);
-			context.lineTo(point2.x, point2.y);
-			context.lineTo(point3.x, point3.y);
-			context.lineTo(point4.x, point4.y);
-			context.lineTo(point5.x, point5.y);
-			context.lineTo(point6.x, point6.y);
-			context.lineTo(point1.x, point1.y);
-		}
+	var sidelength = tileSize/Math.sqrt(3);
+	for (var index in map) {
+		var tile = map[index];
+		var xoffset = tile.y % 2 === 1 ? tileSize/2 : 0;
+		var spritePoint = toIso(point2D(xoffset + tile.x*tileSize,
+			tile.y*3*sidelength/2), camera);
+		context.drawImage(sprites[tile.type], spritePoint.x, spritePoint.y);
 	}
-	context.closePath();
-	context.stroke();
 }
 
 // $.fn.isogrid implementation
@@ -91,9 +64,8 @@ jQuery(function($){
 	$.fn.isogrid = function(options) {
 		// settings
 		var settings = {
-			rows: 10,
-			cols: 10,
-			tileSize: 32,
+			map: {map:{}},
+			tileSize: 128,
 			camera: {
 				x: 0,
 				y: 0,
@@ -118,7 +90,7 @@ jQuery(function($){
 				// translate
 			},
 			redraw: function() {
-				drawGrid(settings.cols, settings.rows, settings.tileSize, elid, settings.camera);
+				drawGrid(settings.map, settings.tileSize, elid, settings.camera);
 			}
 		};
 
