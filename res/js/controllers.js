@@ -1,4 +1,6 @@
-function WCController($scope, socket) {
+var controllers = {};
+
+controllers.WCController = function ($scope, socket) {
 	$scope.lobbies = [];
 	$scope.messages = [];
 
@@ -10,4 +12,6 @@ function WCController($scope, socket) {
 		$scope.messages.push(data.message);
 	});
 
-}
+};
+
+app.controller(controllers);
