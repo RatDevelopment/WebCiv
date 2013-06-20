@@ -28,26 +28,25 @@ function verticalDilute(point, dilution) {
 }
 
 function toIso(point, camera) {
-	var dilutedPoint = verticalDilute(point, camera.dilution);
-	var translatedPoint = translate(dilutedPoint, camera);
+	var translatedPoint = translate(point, camera);
 	var isox = Math.floor(translatedPoint.x);
 	var isoy = Math.floor(translatedPoint.y);
 	return point2D(isox, isoy);
 }
 
-function drawGrid(map, tileSize, canvasId, camera) {
+function drawGrid(map, tileWidth, tileHeight, canvasId, camera) {
 	var docwidth = $(window).width();
 	var docheight = $(window).height()-5;
 	var canvas = document.getElementById(canvasId);
 	$('#' + canvasId).attr("width", docwidth);
 	$('#' + canvasId).attr("height", docheight);
 	var context = canvas.getContext('2d');
-	var sidelength = tileSize/Math.sqrt(3);
+	var yspace = Math.floor(3*tileHeight/4);
 	for (var index in map) {
 		var tile = map[index];
-		var xoffset = tile.y % 2 === 1 ? tileSize/2 : 0;
-		var spritePoint = toIso(point2D(xoffset + tile.x*tileSize,
-			tile.y*3*sidelength/2), camera);
+		var xoffset = tile.y % 2 === 1 ? tileWidth/2 : 0;
+		var spritePoint = toIso(point2D(xoffset + tile.x*tileWidth,
+			tile.y*yspace), camera);
 		context.drawImage(sprites[tile.type], spritePoint.x, spritePoint.y);
 	}
 }
@@ -58,16 +57,16 @@ jQuery(function($){
 		// settings
 		var settings = {
 			map: {},
-			tileSize: 128,
-			camera: {
-				x: 0,
-				y: 0,
-				dilution: 1.4
-			}
+			tileWidth: 128,
+			tileHeight: 106
 		};
 
 		// custom settings
 		$.extend(settings, options);
+
+		// make camera, center it
+		var camera = point2D(-1*settings.map.cols*settings.tileWidth/2,
+			-1*settings.map.rows*settings.tileHeight/2);
 
 		// initialize grid
 		function init() {
@@ -84,7 +83,8 @@ jQuery(function($){
 				// translate
 			},
 			redraw: function() {
-				drawGrid(settings.map, settings.tileSize, elid, settings.camera);
+				drawGrid(settings.map.map, settings.tileWidth, settings.tileHeight,
+					elid, camera);
 			}
 		};
 
@@ -105,8 +105,8 @@ jQuery(function($){
 			mousedownx = e.pageX;
 			mousedowny = e.pageY;
 			mousedowncam = {
-				x: settings.camera.x,
-				y: settings.camera.y
+				x: camera.x,
+				y: camera.y
 			};
 		});
 		$(document).mouseup(function() {
@@ -119,8 +119,8 @@ jQuery(function($){
 				var mousey = e.pageY;
 				var newx = mousedowncam.x + mousex - mousedownx;
 				var newy = mousedowncam.y + mousey - mousedowny;
-				settings.camera.x = newx;
-				settings.camera.y = newy;
+				camera.x = newx;
+				camera.y = newy;
 				object.redraw();
 			}
 		});
