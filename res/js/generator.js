@@ -34,6 +34,9 @@ function getTile(x, y) {
 }
 
 function getMap(rows, cols) {
+	if (rows % 2 !== 0 || cols % 2 !== 0) {
+		throw "The number of rows and columns must be even.";
+	}
 	var map = {
 		rows: rows,
 		cols: cols,
