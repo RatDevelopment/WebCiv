@@ -9,7 +9,8 @@ function sprite(src) {
 // sprites
 var sprites = {
 	ground: sprite('ground.png'),
-	water: sprite('water.png')
+	water: sprite('water.png'),
+	blank: sprite('blank.png')
 };
 
 // functions
@@ -28,6 +29,13 @@ function toIso(point, camera) {
 	return point2D(isox, isoy);
 }
 
+function drawSprite(tile, tileWidth, yspace, camera, context) {
+	var xoffset = Math.abs(tile.y) % 2 === 1 ? tileWidth/2 : 0;
+	var spritePoint = toIso(point2D(xoffset + tile.x*tileWidth,
+		tile.y*yspace), camera);
+	context.drawImage(sprites[tile.type], spritePoint.x, spritePoint.y);
+}
+
 function drawGrid(map, tileWidth, tileHeight, canvasId, camera) {
 	var docwidth = $(window).width();
 	var docheight = $(window).height()-5;
@@ -36,14 +44,12 @@ function drawGrid(map, tileWidth, tileHeight, canvasId, camera) {
 	$('#' + canvasId).attr("height", docheight);
 	var context = canvas.getContext('2d');
 	var yspace = Math.floor(3*tileHeight/4);
-	for (var i = 0; i <= Math.ceil(docwidth/tileWidth); i++) {
-		for (var j = 0; j <= Math.ceil(docheight/yspace); j++) {
-			var tile = map[j+Math.floor(-1*camera.x/tileWidth)]
-				[i+Math.floor(-1*camera.y/yspace)];
-			var xoffset = tile.y % 2 === 1 ? tileWidth/2 : 0;
-			var spritePoint = toIso(point2D(xoffset + tile.x*tileWidth,
-				tile.y*yspace), camera);
-			context.drawImage(sprites[tile.type], spritePoint.x, spritePoint.y);
+	var camx = Math.floor(-1*camera.x/tileWidth);
+	var camy = Math.floor(-1*camera.y/yspace);
+	for (var i = -1; i <= Math.ceil(docwidth/tileWidth); i++) {
+		for (var j = -1; j <= Math.ceil(docheight/yspace); j++) {
+			var tile = map.getTile(i+camx, j+camy);
+				drawSprite(tile, tileWidth, yspace, camera, context);
 		}
 	}
 }
@@ -81,7 +87,7 @@ jQuery(function($){
 				// translate
 			},
 			redraw: function() {
-				drawGrid(settings.map.tiles, settings.tileWidth, settings.tileHeight,
+				drawGrid(settings.map, settings.tileWidth, settings.tileHeight,
 					elid, camera);
 			}
 		};
