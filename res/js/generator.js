@@ -46,47 +46,47 @@ function getMap(rows, cols) {
 			var type = Math.random() < 0.7 ? "ground" : "water";
 			// neighbors will be a list of point2D elements
 			var neighbors = {};
-			if (i !== 0) {
+			if (j !== 0) {
 				// top left
-				if (j === 0) {
-					neighbors.topleft = point2D(cols-1, i-1);
+				if (i === 0) {
+					neighbors.topleft = point2D(cols-1, j-1);
 				} else {
-					neighbors.topleft = point2D(j-1, i-1);
+					neighbors.topleft = point2D(i-1, j-1);
 				}
 				// top right
-				if (j === cols-1) {
-					neighbors.topright = point2D(0, i-1);
+				if (i === cols-1) {
+					neighbors.topright = point2D(0, j-1);
 				} else {
-					neighbors.topright = point2D(j+1, i-1);
+					neighbors.topright = point2D(i+1, j-1);
 				}
 			}
-			if (i !== rows-1) {
+			if (j !== rows-1) {
 				// bottom left
-				if (j === 0) {
-					neighbors.bottomleft = point2D(cols-1, i+1);
+				if (i === 0) {
+					neighbors.bottomleft = point2D(cols-1, j+1);
 				} else {
-					neighbors.bottomleft = point2D(j-1, i+1);
+					neighbors.bottomleft = point2D(i-1, j+1);
 				}
 				// bottom right
-				if (j === cols-1) {
-					neighbors.bottomright = point2D(0, i+1);
+				if (i === cols-1) {
+					neighbors.bottomright = point2D(0, j+1);
 				} else {
-					neighbors.bottomright = point2D(j+1, i+1);
+					neighbors.bottomright = point2D(i+1, j+1);
 				}
 			}
 			// left
 			if (j === 0) {
-				neighbors.left = point2D(cols-1, i);
+				neighbors.left = point2D(cols-1, j);
 			} else {
-				neighbors.left = point2D(j-1, i);
+				neighbors.left = point2D(i-1, j);
 			}
 			// right
 			if (j === cols-1) {
-				neighbors.right = point2D(0, i);
+				neighbors.right = point2D(0, j);
 			} else {
-				neighbors.right = point2D(j+1, i);
+				neighbors.right = point2D(i+1, j);
 			}
-			map.tiles[i][j] = tile(j, i, type, neighbors);
+			map.tiles[i][j] = tile(i, j, type, neighbors);
 		}
 	}
 	return map;
