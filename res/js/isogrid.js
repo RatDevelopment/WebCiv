@@ -1,10 +1,4 @@
 // "classes"
-function point2D(x, y) {
-	var result = {};
-	result.x = x;
-	result.y = y;
-	return result;
-}
 
 function sprite(src) {
 	var img = new Image();
@@ -42,12 +36,15 @@ function drawGrid(map, tileWidth, tileHeight, canvasId, camera) {
 	$('#' + canvasId).attr("height", docheight);
 	var context = canvas.getContext('2d');
 	var yspace = Math.floor(3*tileHeight/4);
-	for (var index in map) {
-		var tile = map[index];
-		var xoffset = tile.y % 2 === 1 ? tileWidth/2 : 0;
-		var spritePoint = toIso(point2D(xoffset + tile.x*tileWidth,
-			tile.y*yspace), camera);
-		context.drawImage(sprites[tile.type], spritePoint.x, spritePoint.y);
+	for (var i = 0; i <= Math.ceil(docwidth/tileWidth); i++) {
+		for (var j = 0; j <= Math.ceil(docheight/yspace); j++) {
+			var tile = map[j+Math.floor(-1*camera.x/tileWidth)]
+				[i+Math.floor(-1*camera.y/yspace)];
+			var xoffset = tile.y % 2 === 1 ? tileWidth/2 : 0;
+			var spritePoint = toIso(point2D(xoffset + tile.x*tileWidth,
+				tile.y*yspace), camera);
+			context.drawImage(sprites[tile.type], spritePoint.x, spritePoint.y);
+		}
 	}
 }
 
@@ -67,6 +64,7 @@ jQuery(function($){
 		// make camera, center it
 		var camera = point2D(-1*settings.map.cols*settings.tileWidth/2,
 			-1*settings.map.rows*settings.tileHeight/2);
+		camera = point2D(0,0);
 
 		// initialize grid
 		function init() {
@@ -83,7 +81,7 @@ jQuery(function($){
 				// translate
 			},
 			redraw: function() {
-				drawGrid(settings.map.map, settings.tileWidth, settings.tileHeight,
+				drawGrid(settings.map.tiles, settings.tileWidth, settings.tileHeight,
 					elid, camera);
 			}
 		};
