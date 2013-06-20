@@ -39,15 +39,31 @@ app.get('/res/:type/:file', function(req, res) {
 	'/' + req.params.file);
 });
 
+function joinLobby(socket, lobby) {
+	socket.join(lobby);
+	broadcastToLobby(socket, lobby, "User joined");
+}
+
+function sendMessage(socket, message) {
+	socket.emit('message', {
+		message: message
+	});
+}
+
 // socket functions
 function broadcastMessage(socket, message) {
 	socket.broadcast.emit('message', {
 		message: message
 	});
-	socket.emit('message', {
+	sendMessage(socket, message);
+}
+
+function broadcastToLobby(socket, lobby, message) {
+	io.sockets.in(lobby).emit('message', {
 		message: message
 	});
 }
+
 function broadcastLobbies(socket) {
 	Lobby.find({}, (function(err, data) {
 		if (!err) {
@@ -65,8 +81,6 @@ function broadcastLobbies(socket) {
 
 // socket management
 io.sockets.on('connection', function (socket) {
-	broadcastMessage(socket, 'A new player has joined.');
-
 	socket.on('name chosen', function (data) {
 		broadcastMessage(socket, data.name + ' has joined.');
 		// associate data.name with socket.id in mongodb
@@ -88,6 +102,7 @@ io.sockets.on('connection', function (socket) {
 			lobby.save(function() {
 				broadcastLobbies(socket);
 			});
+			joinLobby(socket, lobby.name);
 		});
 	});
 
@@ -100,5 +115,13 @@ io.sockets.on('connection', function (socket) {
 				broadcastMessage(socket, data.name + ' has disconnected.');
 			}
 		});
+	});
+	
+	socket.on('join', function(data) {
+		joinLobby(socket, data.lobby);
+	});
+	
+	socket.on('message', function(data) {
+		broadcastToLobby(socket, data.lobby, data.message);
 	});
 });

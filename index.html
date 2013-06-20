@@ -25,5 +25,17 @@
 			</div>
 			<div ng-repeat="message in messages">{{ message }}</div>
 		</div>
+		<div id="messageContent" style="display: none;">
+			<form id="messageForm">
+				Send a message: <input type="text" id="messageField" ng-model="messageField">
+				<input type="submit" id="messageSubmit">
+			</form>
+		</div>
+		<div id="content3" style="display: none;">
+			<form id="lobbyForm">
+				Enter a lobby name: <input type="text" id="lobbyinput" ng-model="lobby">
+				<input type="submit" id="lobbysubmit">
+			</form>
+		</div>
 	</body>
 </html>

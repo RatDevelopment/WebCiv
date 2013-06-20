@@ -11,7 +11,6 @@ controllers.WCController = function ($scope, socket) {
 	socket.on('message', function (data) {
 		$scope.messages.push(data.message);
 	});
-
 };
 
 app.controller(controllers);

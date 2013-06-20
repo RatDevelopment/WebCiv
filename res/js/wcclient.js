@@ -9,6 +9,8 @@ jQuery(function($) {
 		var name = $('#nameinput').val();
 		$('#content').hide();
 		$('#content2').show();
+		$('#messageContent').show();
+		$('#content3').show();
 		$('#newlobby').click(function() {
 			socket.emit('new lobby', {});
 		});
@@ -16,5 +18,25 @@ jQuery(function($) {
 			name: name
 		});
 		return false;
+	});
+	
+	$('#messageForm').submit(function() {
+		var lobby = $('#lobbyinput').val();
+		if (!lobby) {
+			lobby = "";
+		}
+		var message = $('#messageField').val();
+		socket.emit('message', {
+			lobby: lobby,
+			message: message
+		});
+		return false;
+	});
+	
+	$('#lobbyForm').submit(function() {
+		var lobby = $('#lobbyinput').val();
+		socket.emit('join', {
+			lobby: lobby
+		});
 	});
 });
