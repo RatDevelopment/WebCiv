@@ -40,9 +40,9 @@ function getMap(rows, cols) {
 		tiles: [],
 		getTile: getTile
 	};
-	for (var i = 0; i < rows; i++) {
+	for (var i = 0; i < cols; i++) {
 		map.tiles[i] = [];
-		for (var j = 0; j < cols; j++) {
+		for (var j = 0; j < rows; j++) {
 			var type = Math.random() < 0.7 ? "ground" : "water";
 			// neighbors will be a list of point2D elements
 			var neighbors = {};
