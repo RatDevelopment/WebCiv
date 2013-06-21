@@ -55,7 +55,7 @@ jQuery(function($) {
   function getLobby() {
     var lobby = $.localStorage('lobby');
     if (!lobby) {
-      lobby = "";
+      lobby = '';
     }
     return lobby;
   }
