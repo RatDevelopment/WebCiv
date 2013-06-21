@@ -9,7 +9,7 @@ mongoose.connect('mongodb://127.0.0.1/db');
 
 server.listen(1337);
 
-// mongoose schemas
+// ---- [ mongoose schemas ] --------------------------------------------------
 var userSchema = mongoose.Schema({
   name: String,
   id: String
@@ -20,16 +20,11 @@ userSchema.statics.removeByID = function(id, callback) {
 userSchema.statics.findByID = function(id, callback) {
   this.findOne({id: new RegExp(id, 'i')}, callback);
 };
-var lobbySchema = mongoose.Schema({
-  name: String,
-  users: Array
-});
 
-// mongoose models
+// ---- [ mongoose models ] ---------------------------------------------------
 var User = mongoose.model('User', userSchema);
-var Lobby = mongoose.model('Lobby', lobbySchema);
 
-// express routing
+// ---- [ express routing ] ---------------------------------------------------
 app.get('/', function(req, res) {
   res.sendfile(__dirname + '/index.html');
 });
@@ -39,67 +34,74 @@ app.get('/res/:type/:file', function(req, res) {
   '/' + req.params.file);
 });
 
-// socket functions
-function broadcastMessage(socket, data) {
+// ---- [ socket functions ] --------------------------------------------------
+// sends message to lobby
+// data must have data.lobby and data.message
+function lobbyMessage(socket, data) {
   var lobby = data.lobby;
   var message = data.message;
-
   io.sockets['in'](lobby).emit('message', {
     lobby: lobby,
     message: message
   });
 }
 
+// emits all lobbies
+// should be called when there is a possible change in lobbies
 function broadcastLobbies(socket) {
-  Lobby.find({}, (function(err, data) {
-    if (!err) {
-      socket.broadcast.emit('lobbies', {
-        lobbies: data
-      });
-      socket.emit('lobbies', {
-        lobbies: data
-      });
+  var lobbies = [];
+  for (var key in io.sockets.manager.rooms) {
+    if (key.length > 0) {
+      var lobby = {};
+      lobby.name = key.substring(1, key.length);
+      lobbies.push(lobby);
     }
-    else {
-      console.log('error');
-    }
-  }));
+  }
+  socket.emit('lobbies', {
+    lobbies: lobbies
+  });
 }
 
+// clears $scope.messages on the clientside
 function clearMessages(socket) {
   socket.emit('messages:clear');
 }
 
+// joins socket lobby
+// data must have data.lobby
 function joinLobby(socket, data) {
   var lobby = data.lobby;
   socket.join(lobby);
   User.findByID(socket.id, function(err, data) {
     var name = data.name;
     clearMessages(socket);
-    broadcastMessage(socket, {
+    lobbyMessage(socket, {
       lobby: lobby,
       message: name + ' has joined ' + lobby + '.'
     });
   });
 }
 
+// leave socket lobby
+// data must have data.lobby
 function leaveLobby(socket, data) {
   var lobby = data.lobby;
   User.findByID(socket.id, function(err, data) {
     var name = data.name;
-    broadcastMessage(socket, {
+    lobbyMessage(socket, {
       lobby: lobby,
       message: name + ' has left ' + lobby + '.'
     });
     clearMessages(socket);
     socket.leave(lobby);
+    broadcastLobbies(socket);
   });
 }
 
-// socket management
+// ---- [ socket management ] -------------------------------------------------
 io.sockets.on('connection', function (socket) {
+  // name is chosen for user
   socket.on('name chosen', function (data) {
-    // associate data.name with socket.id in mongodb
     var user = new User({
       name: data.name,
       id: socket.id
@@ -108,16 +110,11 @@ io.sockets.on('connection', function (socket) {
     broadcastLobbies(socket);
   });
 
+  // new lobby is made by user
   socket.on('lobby:new', function(data) {
     User.findByID(socket.id, function(err, data) {
       var lobbyName = data.name + '\'s lobby';
-      var lobby = new Lobby({
-        name: lobbyName,
-        users: [socket.id]
-      });
-      lobby.save(function() {
-        broadcastLobbies(socket);
-      });
+      broadcastLobbies(socket);
       joinLobby(socket, {lobby: lobbyName});
       socket.emit('lobby:join', {
         lobby: lobbyName
@@ -125,6 +122,7 @@ io.sockets.on('connection', function (socket) {
     });
   });
 
+  // user disconnects
   socket.on('disconnect', function() {
     function disc(err, data) {
       var message = '';
@@ -134,7 +132,7 @@ io.sockets.on('connection', function (socket) {
       else {
         message = data.name + ' has disconnected.';
       }
-      broadcastMessage(socket, {
+      lobbyMessage(socket, {
         lobby: lobbyName,
         message: message
       });
@@ -151,15 +149,18 @@ io.sockets.on('connection', function (socket) {
     User.removeByID(socket.id);
   });
 
+  // when user joins a lobby
   socket.on('lobby:join', function(data) {
     joinLobby(socket, data);
   });
 
+  // when user leaves a lobby
   socket.on('lobby:leave', function(data) {
     leaveLobby(socket, data);
   });
 
+  //when user sends a message to a lobby
   socket.on('message', function(data) {
-    broadcastMessage(socket, data);
+    lobbyMessage(socket, data);
   });
 });
