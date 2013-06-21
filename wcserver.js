@@ -39,31 +39,6 @@ app.get('/res/:type/:file', function(req, res) {
   '/' + req.params.file);
 });
 
-function leaveLobby(socket, data) {
-  var user = data.name;
-  var lobby = data.oldLobby;
-
-  socket.leave(lobby);
-  broadcastMessage(socket, {
-    lobby: lobby,
-    message: user + ' has left ' + lobby + '.'
-  });
-}
-
-function joinLobby(socket, data) {
-  var user = data.name;
-  var lobby = data.lobby;
-
-  if (!!data.oldLobby) {
-    leaveLobby(socket, data);
-  }
-  socket.join(lobby);
-  broadcastMessage(socket, {
-    lobby: lobby,
-    message: user + ' has joined ' + lobby + '.'
-  });
-}
-
 // socket functions
 function broadcastMessage(socket, data) {
   var lobby = data.lobby;
@@ -91,6 +66,30 @@ function broadcastLobbies(socket) {
   }));
 }
 
+function joinLobby(socket, data) {
+  var lobby = data.lobby;
+  socket.join(lobby);
+  User.findByID(socket.id, function(err, data) {
+    var name = data.name;
+    broadcastMessage(socket, {
+      lobby: lobby,
+      message: name + ' has joined ' + lobby + '.'
+    });
+  });
+}
+
+function leaveLobby(socket, data) {
+  var lobby = data.lobby;
+  User.findByID(socket.id, function(err, data) {
+    var name = data.name;
+    broadcastMessage(socket, {
+      lobby: lobby,
+      message: name + ' has left ' + lobby + '.'
+    });
+    socket.leave(lobby);
+  });
+}
+
 // socket management
 io.sockets.on('connection', function (socket) {
   socket.on('name chosen', function (data) {
@@ -103,7 +102,7 @@ io.sockets.on('connection', function (socket) {
     broadcastLobbies(socket);
   });
 
-  socket.on('new lobby', function(data) {
+  socket.on('lobby:new', function(data) {
     User.findByID(socket.id, function(err, data) {
       var lobbyName = data.name + '\'s lobby';
       var lobby = new Lobby({
@@ -113,24 +112,45 @@ io.sockets.on('connection', function (socket) {
       lobby.save(function() {
         broadcastLobbies(socket);
       });
-      joinLobby(socket, lobby.name);
+      joinLobby(socket, {lobby: lobbyName});
+      socket.emit('lobby:join', {
+        lobby: lobbyName
+      });
     });
   });
 
   socket.on('disconnect', function() {
-    // find user name in mongo based on socket.id
-    User.removeByID(socket.id, function(err, data) {
+    function disc(err, data) {
+      var message = '';
       if (data === null) {
-        broadcastMessage(socket, 'An unnamed player has diconnected.');
+        message = 'An unnamed player has diconnected.';
       }
       else {
-        broadcastMessage(socket, data.name + ' has disconnected.');
+        message = data.name + ' has disconnected.';
       }
-    });
+      broadcastMessage(socket, {
+        lobby: lobbyName,
+        message: message
+      });
+    }
+    // find user name in mongo based on socket.id
+    var lobbies = socket.manager.roomClients[socket.id];
+    for (var lobby in lobbies) {
+      var lobbyName = lobby;
+      if (lobby.length > 0) {
+        lobbyName = lobby.substring(1, lobby.length);
+        User.findByID(socket.id, disc);
+      }
+    }
+    User.removeByID(socket.id);
   });
 
-  socket.on('join', function(data) {
+  socket.on('lobby:join', function(data) {
     joinLobby(socket, data);
+  });
+
+  socket.on('lobby:leave', function(data) {
+    leaveLobby(socket, data);
   });
 
   socket.on('message', function(data) {

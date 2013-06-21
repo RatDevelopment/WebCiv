@@ -20,23 +20,28 @@
       <h1>{{ name }}</h1>
     </div>
     <div id="content2" style="display: none;">
-      <button id="newlobby">New Lobby</button>
       <div id="lobbies">
-        <p ng-repeat="lobby in lobbies">{{ lobby.name }}</p>
+        <p>
+          <button id="newlobby">New Lobby</button>
+        </p>
+        <p ng-repeat="lobby in lobbies">
+          {{ lobby.name }} -
+          <button class="lobbyJoin" room="{{ lobby.name }}">
+            Join
+          </button>
+        </p>
       </div>
-      <div ng-repeat="message in messages">{{ message }}</div>
     </div>
-    <div id="messageContent" style="display: none;">
+    <div id="content3" style="display: none;">
+      <h1>{{ lobby }}</h1>
+      <div ng-repeat="message in messages">{{ message }}</div>
       <form id="messageForm">
         Send a message: <input type="text" id="messageField" ng-model="messageField">
         <input type="submit" id="messageSubmit">
       </form>
-    </div>
-    <div id="content3" style="display: none;">
-      <form id="lobbyForm">
-        Enter a lobby name: <input type="text" id="lobbyinput" ng-model="lobby">
-        <input type="submit" id="lobbysubmit">
-      </form>
+      <button class="lobbyLeave">
+        Leave Room
+      </button>
     </div>
   </body>
 </html>
