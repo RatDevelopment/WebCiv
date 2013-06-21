@@ -66,11 +66,16 @@ function broadcastLobbies(socket) {
   }));
 }
 
+function clearMessages(socket) {
+  socket.emit('messages:clear');
+}
+
 function joinLobby(socket, data) {
   var lobby = data.lobby;
   socket.join(lobby);
   User.findByID(socket.id, function(err, data) {
     var name = data.name;
+    clearMessages(socket);
     broadcastMessage(socket, {
       lobby: lobby,
       message: name + ' has joined ' + lobby + '.'
@@ -86,6 +91,7 @@ function leaveLobby(socket, data) {
       lobby: lobby,
       message: name + ' has left ' + lobby + '.'
     });
+    clearMessages(socket);
     socket.leave(lobby);
   });
 }
