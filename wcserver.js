@@ -42,25 +42,25 @@ app.get('/res/:type/:file', function(req, res) {
 function leaveLobby(socket, data) {
   var user = data.name;
   var lobby = data.oldLobby;
-  
+
   socket.leave(lobby);
   broadcastMessage(socket, {
     lobby: lobby,
-    message: user + ' has left ' + lobby + '.');
+    message: user + ' has left ' + lobby + '.'
   });
 }
 
 function joinLobby(socket, data) {
   var user = data.name;
   var lobby = data.lobby;
-  
+
   if (!!data.oldLobby) {
     leaveLobby(socket, data);
   }
   socket.join(lobby);
   broadcastMessage(socket, {
     lobby: lobby,
-    message: user + ' has joined ' + lobby + '.');
+    message: user + ' has joined ' + lobby + '.'
   });
 }
 
@@ -68,8 +68,8 @@ function joinLobby(socket, data) {
 function broadcastMessage(socket, data) {
   var lobby = data.lobby;
   var message = data.message;
-  
-  io.sockets.in(lobby).emit('message', {
+
+  io.sockets['in'](lobby).emit('message', {
     lobby: lobby,
     message: message
   });
@@ -128,11 +128,11 @@ io.sockets.on('connection', function (socket) {
       }
     });
   });
-  
+
   socket.on('join', function(data) {
     joinLobby(socket, data);
   });
-  
+
   socket.on('message', function(data) {
     broadcastMessage(socket, data);
   });
