@@ -1,42 +1,42 @@
 <!doctype html>
 <html ng-app="wc">
-	<head>
-		<title>WebCiv</title>
-		<script src="res/lib/jquery.min.js"></script>
-		<script src="res/lib/jquery.storage.js"></script>
-		<script src="res/lib/angular.min.js"></script>
-		<script src="/socket.io/socket.io.js"></script>
-		<script src="res/js/app.js"></script>
-		<script src="res/js/services.js"></script>
-		<script src="res/js/controllers.js"></script>
-		<script src="res/js/wcclient.js"></script>
-	</head>
-	<body ng-controller="WCController">
-		<div id="content">
-			<form id="nameform">
-				Enter a nickname: <input type="text" id="nameinput" ng-model="name">
-				<input type="submit" id="namesubmit">
-			</form>
-			<h1>{{ name }}</h1>
-		</div>
-		<div id="content2" style="display: none;">
-			<button id="newlobby">New Lobby</button>
-			<div id="lobbies">
-				<p ng-repeat="lobby in lobbies">{{ lobby.name }}</p>
-			</div>
-			<div ng-repeat="message in messages">{{ message }}</div>
-		</div>
-		<div id="messageContent" style="display: none;">
-			<form id="messageForm">
-				Send a message: <input type="text" id="messageField" ng-model="messageField">
-				<input type="submit" id="messageSubmit">
-			</form>
-		</div>
-		<div id="content3" style="display: none;">
-			<form id="lobbyForm">
-				Enter a lobby name: <input type="text" id="lobbyinput" ng-model="lobby">
-				<input type="submit" id="lobbysubmit">
-			</form>
-		</div>
-	</body>
+  <head>
+    <title>WebCiv</title>
+    <script src="res/lib/jquery.min.js"></script>
+    <script src="res/lib/jquery.storage.js"></script>
+    <script src="res/lib/angular.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="res/js/app.js"></script>
+    <script src="res/js/services.js"></script>
+    <script src="res/js/controllers.js"></script>
+    <script src="res/js/wcclient.js"></script>
+  </head>
+  <body ng-controller="WCController">
+    <div id="content">
+      <form id="nameform">
+        Enter a nickname: <input type="text" id="nameinput" ng-model="name">
+        <input type="submit" id="namesubmit">
+      </form>
+      <h1>{{ name }}</h1>
+    </div>
+    <div id="content2" style="display: none;">
+      <button id="newlobby">New Lobby</button>
+      <div id="lobbies">
+        <p ng-repeat="lobby in lobbies">{{ lobby.name }}</p>
+      </div>
+      <div ng-repeat="message in messages">{{ message }}</div>
+    </div>
+    <div id="messageContent" style="display: none;">
+      <form id="messageForm">
+        Send a message: <input type="text" id="messageField" ng-model="messageField">
+        <input type="submit" id="messageSubmit">
+      </form>
+    </div>
+    <div id="content3" style="display: none;">
+      <form id="lobbyForm">
+        Enter a lobby name: <input type="text" id="lobbyinput" ng-model="lobby">
+        <input type="submit" id="lobbysubmit">
+      </form>
+    </div>
+  </body>
 </html>
