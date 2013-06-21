@@ -39,27 +39,38 @@ app.get('/res/:type/:file', function(req, res) {
 	'/' + req.params.file);
 });
 
-function joinLobby(socket, lobby) {
-	socket.join(lobby);
-	broadcastToLobby(socket, lobby, "User joined");
+function leaveLobby(socket, data) {
+	var user = data.name;
+	var lobby = data.oldLobby;
+	
+	socket.leave(lobby);
+	broadcastMessage(socket, {
+		lobby: lobby,
+		message: user + " has left " + lobby + ".");
+	});
 }
 
-function sendMessage(socket, message) {
-	socket.emit('message', {
-		message: message
+function joinLobby(socket, data) {
+	var user = data.name;
+	var lobby = data.lobby;
+	
+	if (data.oldLobby !== "") {
+		leaveLobby(socket, data);
+	}
+	socket.join(lobby);
+	broadcastMessage(socket, {
+		lobby: lobby,
+		message: user + " has joined " + lobby + ".");
 	});
 }
 
 // socket functions
-function broadcastMessage(socket, message) {
-	socket.broadcast.emit('message', {
-		message: message
-	});
-	sendMessage(socket, message);
-}
-
-function broadcastToLobby(socket, lobby, message) {
+function broadcastMessage(socket, data) {
+	var lobby = data.lobby;
+	var message = data.message;
+	
 	io.sockets.in(lobby).emit('message', {
+		lobby: lobby,
 		message: message
 	});
 }
@@ -82,7 +93,6 @@ function broadcastLobbies(socket) {
 // socket management
 io.sockets.on('connection', function (socket) {
 	socket.on('name chosen', function (data) {
-		broadcastMessage(socket, data.name + ' has joined.');
 		// associate data.name with socket.id in mongodb
 		var user = new User({
 			name: data.name,
@@ -118,10 +128,10 @@ io.sockets.on('connection', function (socket) {
 	});
 	
 	socket.on('join', function(data) {
-		joinLobby(socket, data.lobby);
+		joinLobby(socket, data);
 	});
 	
 	socket.on('message', function(data) {
-		broadcastToLobby(socket, data.lobby, data.message);
+		broadcastMessage(socket, data);
 	});
 });
