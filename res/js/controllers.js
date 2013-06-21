@@ -5,7 +5,7 @@ controllers.WCController = function ($scope, socket) {
   $scope.messages = [];
   $scope.lobby = '';
 
-  socket.on('lobbies', function (data) {
+  socket.on('lobby:list', function (data) {
     $scope.lobbies = data.lobbies;
   });
 

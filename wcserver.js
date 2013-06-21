@@ -57,7 +57,7 @@ function broadcastLobbies(socket) {
       lobbies.push(lobby);
     }
   }
-  socket.emit('lobbies', {
+  socket.broadcast.emit('lobby:list', {
     lobbies: lobbies
   });
 }
@@ -114,11 +114,11 @@ io.sockets.on('connection', function (socket) {
   socket.on('lobby:new', function(data) {
     User.findByID(socket.id, function(err, data) {
       var lobbyName = data.name + '\'s lobby';
-      broadcastLobbies(socket);
       joinLobby(socket, {lobby: lobbyName});
       socket.emit('lobby:join', {
         lobby: lobbyName
       });
+      broadcastLobbies(socket);
     });
   });
 
