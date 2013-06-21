@@ -28,19 +28,6 @@ jQuery(function($) {
     return false;
   });
 
-  if (!!$.localStorage('username')) {
-    $('#content').hide();
-    $('#content2').show();
-    $('#newlobby').click(function() {
-      socket.emit('lobby:new', {});
-    });
-    socket.emit('name chosen', {
-      name: name
-    });
-
-    $.localStorage('lobby', '');
-  }
-
   $(document).on('click', '.lobbyJoin', function() {
     var lobby = $(this).attr('room');
     $.localStorage('lobby', lobby);
