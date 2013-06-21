@@ -48,7 +48,7 @@ function lobbyMessage(socket, data) {
 
 // emits all lobbies
 // should be called when there is a possible change in lobbies
-function broadcastLobbies(socket) {
+function broadcastLobbies() {
   var lobbies = [];
   for (var key in io.sockets.manager.rooms) {
     if (key.length > 0) {
@@ -57,7 +57,7 @@ function broadcastLobbies(socket) {
       lobbies.push(lobby);
     }
   }
-  socket.broadcast.emit('lobby:list', {
+  io.sockets.emit('lobby:list', {
     lobbies: lobbies
   });
 }
@@ -79,6 +79,7 @@ function joinLobby(socket, data) {
       lobby: lobby,
       message: name + ' has joined ' + lobby + '.'
     });
+    broadcastLobbies();
   });
 }
 
@@ -94,7 +95,7 @@ function leaveLobby(socket, data) {
     });
     clearMessages(socket);
     socket.leave(lobby);
-    broadcastLobbies(socket);
+    broadcastLobbies();
   });
 }
 
@@ -107,7 +108,7 @@ io.sockets.on('connection', function (socket) {
       id: socket.id
     });
     user.save();
-    broadcastLobbies(socket);
+    broadcastLobbies();
   });
 
   // new lobby is made by user
@@ -118,7 +119,7 @@ io.sockets.on('connection', function (socket) {
       socket.emit('lobby:join', {
         lobby: lobbyName
       });
-      broadcastLobbies(socket);
+      broadcastLobbies();
     });
   });
 
