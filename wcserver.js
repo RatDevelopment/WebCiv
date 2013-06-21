@@ -148,6 +148,7 @@ io.sockets.on('connection', function (socket) {
       }
     }
     User.removeByID(socket.id);
+    broadcastLobbies();
   });
 
   // when user joins a lobby
