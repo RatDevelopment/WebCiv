@@ -7,6 +7,7 @@ WIP
 * Socket.io
 * Express 3 Web Framework
 * jQuery 2.0.2
+* jQuery.storage.js 0.0.3
 * Angular.js
 * Jade 0.31.1
 * MongoDB 2.4.4
