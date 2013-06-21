@@ -46,7 +46,7 @@ function leaveLobby(socket, data) {
   socket.leave(lobby);
   broadcastMessage(socket, {
     lobby: lobby,
-    message: user + " has left " + lobby + ".");
+    message: user + ' has left ' + lobby + '.');
   });
 }
 
@@ -60,7 +60,7 @@ function joinLobby(socket, data) {
   socket.join(lobby);
   broadcastMessage(socket, {
     lobby: lobby,
-    message: user + " has joined " + lobby + ".");
+    message: user + ' has joined ' + lobby + '.');
   });
 }
 
@@ -105,7 +105,7 @@ io.sockets.on('connection', function (socket) {
 
   socket.on('new lobby', function(data) {
     User.findByID(socket.id, function(err, data) {
-      var lobbyName = data.name + "'s lobby";
+      var lobbyName = data.name + '\'s lobby';
       var lobby = new Lobby({
         name: lobbyName,
         users: [socket.id]

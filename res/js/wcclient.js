@@ -17,8 +17,8 @@ jQuery(function($) {
       name: name
     });
     
-    $.localStorage( 'lobby', "");
-    $.localStorage( 'username', name );
+    $.localStorage('lobby', '');
+    $.localStorage('username', name);
     return false;
   });
   
@@ -30,13 +30,13 @@ jQuery(function($) {
     socket.emit('message', {
       name: name,
       lobby: lobby,
-      message: name + ": " + message
+      message: name + ': ' + message
     });
     return false;
   });
   
   $('#lobbyForm').submit(function() {
-    var name = $.localStorage( 'username' );
+    var name = $.localStorage('username');
     var oldLobby = getLobby();
     var lobby = $('#lobbyinput').val();
     
@@ -46,12 +46,12 @@ jQuery(function($) {
       oldLobby: oldLobby,
       lobby: lobby
     });
-    $.localStorage( 'lobby', lobby );
+    $.localStorage('lobby', lobby);
     return false;
   });
   
   function getLobby() {
-    var lobby = $.localStorage( 'lobby' );
+    var lobby = $.localStorage('lobby');
     if (!lobby) {
       lobby = "";
     }
