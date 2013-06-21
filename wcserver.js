@@ -70,33 +70,37 @@ function clearMessages(socket) {
 // joins socket lobby
 // data must have data.lobby
 function joinLobby(socket, data) {
-  var lobby = data.lobby;
-  socket.join(lobby);
-  User.findByID(socket.id, function(err, data) {
-    var name = data.name;
-    clearMessages(socket);
-    lobbyMessage(socket, {
-      lobby: lobby,
-      message: name + ' has joined ' + lobby + '.'
+  if (data !== null) {
+    var lobby = data.lobby;
+    socket.join(lobby);
+    User.findByID(socket.id, function(err, data) {
+      var name = data.name;
+      clearMessages(socket);
+      lobbyMessage(socket, {
+        lobby: lobby,
+        message: name + ' has joined ' + lobby + '.'
+      });
+      broadcastLobbies();
     });
-    broadcastLobbies();
-  });
+  }
 }
 
 // leave socket lobby
 // data must have data.lobby
 function leaveLobby(socket, data) {
-  var lobby = data.lobby;
-  User.findByID(socket.id, function(err, data) {
-    var name = data.name;
-    lobbyMessage(socket, {
-      lobby: lobby,
-      message: name + ' has left ' + lobby + '.'
+  if (data !== null) {
+    var lobby = data.lobby;
+    User.findByID(socket.id, function(err, data) {
+      var name = data.name;
+      lobbyMessage(socket, {
+        lobby: lobby,
+        message: name + ' has left ' + lobby + '.'
+      });
+      clearMessages(socket);
+      socket.leave(lobby);
+      broadcastLobbies();
     });
-    clearMessages(socket);
-    socket.leave(lobby);
-    broadcastLobbies();
-  });
+  }
 }
 
 // ---- [ socket management ] -------------------------------------------------
@@ -148,6 +152,7 @@ io.sockets.on('connection', function (socket) {
       }
     }
     User.removeByID(socket.id);
+    broadcastLobbies();
   });
 
   // when user joins a lobby
