@@ -1,0 +1,18 @@
+.chatWindow {
+  height: 240px;
+  width: 60%;
+  overflow-y: auto;
+  border: 1px solid #000;
+}
+
+.nameField {
+  width: 20%;
+}
+
+.messageField {
+  width: 50%;
+}
+
+.hidden {
+  display: none;
+}

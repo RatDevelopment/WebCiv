@@ -11,6 +11,8 @@ controllers.WCController = function ($scope, socket) {
 
   socket.on('message', function (data) {
     $scope.messages.push(data.message);
+  }, function() {
+    $('#chatWindow').scrollTop($('#chatWindow').prop('scrollHeight'));
   });
 
   socket.on('messages:clear', function(data) {

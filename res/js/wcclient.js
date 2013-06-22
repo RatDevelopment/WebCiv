@@ -1,9 +1,5 @@
 var socket = io.connect();
 
-socket.on('message', function (data) {
-  $('#messages').append(data.message + '<br>');
-});
-
 socket.on('lobby:join', function(data) {
   var lobby = data.lobby;
   $.localStorage('lobby', lobby);
@@ -53,12 +49,14 @@ jQuery(function($) {
     var lobby = getLobby();
     var message = $('#messageField').val();
 
-    socket.emit('message', {
-      name: name,
-      lobby: lobby,
-      message: name + ': ' + message
-    });
-    $('#messageField').val('');
+    if (message) {
+      socket.emit('message', {
+        name: name,
+        lobby: lobby,
+        message: name + ': ' + message
+      });
+      $('#messageField').val('');
+    }
     return false;
   });
 
