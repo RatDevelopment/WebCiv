@@ -1,0 +1,5 @@
+form#nameForm(ng-submit='submitName()')
+  | Enter a username:&nbsp;
+  input#nameInput.nameField(ng-model='name', type='text')
+  input#nameSubmit(type='submit', value='Submit')
+h1 {{ name }}
