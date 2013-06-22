@@ -2,6 +2,7 @@
 <html ng-app="wc">
   <head>
     <title>WebCiv</title>
+    <link rel="stylesheet" type="text/css" href="res/css/webciv.css">
     <script src="res/lib/jquery.min.js"></script>
     <script src="res/lib/jquery.storage.min.js"></script>
     <script src="res/lib/angular.min.js"></script>
@@ -14,12 +15,12 @@
   <body ng-controller="WCController">
     <div id="content">
       <form id="nameform">
-        Enter a username: <input type="text" id="nameinput" ng-model="name">
+        Enter a username: <input type="text" id="nameinput" ng-model="name" class="nameField">
         <input type="submit" id="namesubmit">
       </form>
       <h1>{{ name }}</h1>
     </div>
-    <div id="content2" style="display: none;">
+    <div id="content2" class="hidden">
       <div id="lobbies">
         <p>
           <button id="newlobby">New Lobby</button>
@@ -32,11 +33,13 @@
         </p>
       </div>
     </div>
-    <div id="content3" style="display: none;">
+    <div id="content3" class="hidden">
       <h1>{{ lobby }}</h1>
-      <div ng-repeat="message in messages">{{ message }}</div>
+      <div id="chatWindow" class="chatWindow">
+        <div ng-repeat="message in messages">{{ message }}</div>
+      </div>
       <form id="messageForm">
-        Send a message: <input type="text" id="messageField" ng-model="messageField">
+        Send a message: <input type="text" id="messageField" ng-model="messageField" class="messageField">
         <input type="submit" id="messageSubmit">
       </form>
       <button class="lobbyLeave">
