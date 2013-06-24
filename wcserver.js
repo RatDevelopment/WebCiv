@@ -1,6 +1,7 @@
 var express = require('express');
 var http = require('http');
 var mongoose = require('mongoose');
+var routes = require('./routes');
 
 var app = express();
 var server = http.createServer(app);
@@ -24,15 +25,25 @@ userSchema.statics.findByID = function(id, callback) {
 // ---- [ mongoose models ] ---------------------------------------------------
 var User = mongoose.model('User', userSchema);
 
-// ---- [ express routing ] ---------------------------------------------------
-app.get('/', function(req, res) {
-  res.sendfile(__dirname + '/index.html');
+// ---- [ jade ] ---------------------------------------------------
+app.configure(function(){
+  app.set('views', __dirname + '/views');
+  app.set('view engine', 'jade');
+  app.set('view options', {
+    layout: false
+  });
+  app.use(express.bodyParser());
+  app.use(express.methodOverride());
+  app.use(express.static(__dirname + '/res'));
+  app.use(app.router);
 });
 
-app.get('/res/:type/:file', function(req, res) {
-  res.sendfile(__dirname + '/res/' + req.params.type +
-  '/' + req.params.file);
-});
+// ---- [ express routing ] ---------------------------------------------------
+app.get('/', routes.index);
+app.get('/partials/:name', routes.partials);
+
+// redirect all others to the index (HTML5 history)
+app.get('*', routes.index);
 
 // ---- [ socket functions ] --------------------------------------------------
 // sends message to lobby
@@ -106,7 +117,7 @@ function leaveLobby(socket, data) {
 // ---- [ socket management ] -------------------------------------------------
 io.sockets.on('connection', function (socket) {
   // name is chosen for user
-  socket.on('name chosen', function (data) {
+  socket.on('name:chosen', function (data) {
     var user = new User({
       name: data.name,
       id: socket.id
