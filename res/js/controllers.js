@@ -5,7 +5,12 @@ controllers.WCController = function ($scope, socket) {
   $scope.lobbies = [];
   $scope.messages = [];
   $scope.lobby = '';
+  $scope.username = '';
   $scope.mainview = 'login';
+  $scope.modal = null;
+
+  // new lobby form
+  $scope.newLobby = {};
 
   // ---- [ socket functions ] ------------------------------------------------
   socket.on('lobby:list', function (data) {
@@ -44,6 +49,8 @@ controllers.WCController = function ($scope, socket) {
     });
     $.localStorage('lobby', '');
     $.localStorage('username', name);
+    $scope.username = name;
+    $scope.newLobby.lobbyName = $scope.username + "'s lobby";
     return false;
   };
 
@@ -63,8 +70,22 @@ controllers.WCController = function ($scope, socket) {
     return false;
   };
 
-  $scope.newLobby = function() {
-      socket.emit('lobby:new', {});
+  $scope.openModal = function(partial) {
+    $scope.modal = partial;
+    $('#modal').show();
+  };
+
+  $scope.closeModal = function() {
+    $scope.modal = null;
+    $('#modal').hide();
+  };
+
+  $scope.lobbyNew = function(lobbyName) {
+    socket.emit('lobby:new', {
+      lobbyName: lobbyName
+    });
+    $scope.closeModal();
+    return false;
   };
 
   $scope.lobbyLeave = function() {

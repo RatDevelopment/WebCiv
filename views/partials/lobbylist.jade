@@ -1,6 +1,6 @@
 #lobbies
   p
-    button(ng-click="newLobby()") New Lobby
+    button(ng-click='openModal("newlobby")') New Lobby
   p(ng-repeat='lobby in lobbies')
     | {{ lobby.name }} -
     button.lobbyJoin(ng-click='lobbyJoin(lobby.name)')

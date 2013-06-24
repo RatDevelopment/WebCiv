@@ -128,8 +128,8 @@ io.sockets.on('connection', function (socket) {
 
   // new lobby is made by user
   socket.on('lobby:new', function(data) {
+    var lobbyName = data.lobbyName;
     User.findByID(socket.id, function(err, data) {
-      var lobbyName = data.name + '\'s lobby';
       joinLobby(socket, {lobby: lobbyName});
       socket.emit('lobby:join', {
         lobby: lobbyName
