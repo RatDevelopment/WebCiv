@@ -1,4 +1,4 @@
 extends layout
 block body
-  body(ng-controller='WCController')
-    div#wccontent(view='partial')
+  body(ng-controller='WCController', ng-init='init()')
+    div#wccontent(view='mainview')

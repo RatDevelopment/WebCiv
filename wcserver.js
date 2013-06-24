@@ -117,7 +117,7 @@ function leaveLobby(socket, data) {
 // ---- [ socket management ] -------------------------------------------------
 io.sockets.on('connection', function (socket) {
   // name is chosen for user
-  socket.on('name chosen', function (data) {
+  socket.on('name:chosen', function (data) {
     var user = new User({
       name: data.name,
       id: socket.id

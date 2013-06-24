@@ -5,7 +5,7 @@ controllers.WCController = function ($scope, socket) {
   $scope.lobbies = [];
   $scope.messages = [];
   $scope.lobby = '';
-  $scope.partial = 'login';
+  $scope.mainview = 'login';
 
   // ---- [ socket functions ] ------------------------------------------------
   socket.on('lobby:list', function (data) {
@@ -15,7 +15,7 @@ controllers.WCController = function ($scope, socket) {
   socket.on('lobby:join', function(data) {
     var lobby = data.lobby;
     $.localStorage('lobby', lobby);
-    $scope.partial = 'lobby';
+    $scope.mainview = 'lobby';
   });
 
   socket.on('message', function (data) {
@@ -30,14 +30,18 @@ controllers.WCController = function ($scope, socket) {
   });
 
   // ---- [ scope functions ] -------------------------------------------------
-  $scope.submitName = function() {
-    var name = $('#nameInput').val();
-    $scope.partial = 'lobbylist';
+  $scope.init = function() {
+    var name = $.localStorage('username');
+    if (!!name) {
+      $scope.submitName(name);
+    }
+  };
 
-    socket.emit('name chosen', {
+  $scope.submitName = function(name) {
+    $scope.mainview = 'lobbylist';
+    socket.emit('name:chosen', {
       name: name
     });
-
     $.localStorage('lobby', '');
     $.localStorage('username', name);
     return false;
@@ -66,7 +70,7 @@ controllers.WCController = function ($scope, socket) {
   $scope.lobbyLeave = function() {
     var lobby = $.localStorage('lobby');
     $.localStorage('lobby', '');
-    $scope.partial = 'lobbylist';
+    $scope.mainview = 'lobbylist';
     socket.emit('lobby:leave', {
       lobby: lobby
     });
@@ -74,7 +78,7 @@ controllers.WCController = function ($scope, socket) {
 
   $scope.lobbyJoin = function(lobby) {
     $.localStorage('lobby', lobby);
-    $scope.partial = 'lobby';
+    $scope.mainview = 'lobby';
     socket.emit('lobby:join', {
       lobby: lobby
     });
