@@ -51,9 +51,11 @@ app.get('*', routes.index);
 function lobbyMessage(socket, data) {
   var lobby = data.lobby;
   var message = data.message;
+  var name = data.name;
   io.sockets['in'](lobby).emit('message', {
     lobby: lobby,
-    message: message
+    message: message,
+    name: name
   });
 }
 

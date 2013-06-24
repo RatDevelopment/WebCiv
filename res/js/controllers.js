@@ -3,14 +3,19 @@ var controllers = {};
 controllers.WCController = function ($scope, socket) {
   // ---- [ scope vars init ] -------------------------------------------------
   $scope.lobbies = [];
-  $scope.messages = [];
-  $scope.lobby = '';
+  $scope.lobbyName = '';
   $scope.username = '';
+
+  // views
   $scope.mainview = 'login';
   $scope.modal = null;
 
   // new lobby form
   $scope.newLobby = {};
+
+  // lobby
+  $scope.lobby = {};
+  $scope.messages = [];
 
   // ---- [ socket functions ] ------------------------------------------------
   socket.on('lobby:list', function (data) {
@@ -24,14 +29,14 @@ controllers.WCController = function ($scope, socket) {
   });
 
   socket.on('message', function (data) {
-    $scope.messages.push(data.message);
+    $scope.messages.push(data);
   }, function() {
     $('#chatWindow').scrollTop($('#chatWindow').prop('scrollHeight'));
   });
 
   socket.on('messages:clear', function(data) {
     $scope.messages = [];
-    $scope.lobby = $.localStorage('lobby');
+    $scope.lobbyName = $.localStorage('lobby');
   });
 
   // ---- [ scope functions ] -------------------------------------------------
@@ -54,30 +59,30 @@ controllers.WCController = function ($scope, socket) {
     return false;
   };
 
-  $scope.sendMessage = function() {
+  $scope.sendMessage = function(message) {
     var name = $.localStorage('username');
     var lobby = getLobby();
-    var message = $('#messageField').val();
-
     if (message) {
       socket.emit('message', {
         name: name,
         lobby: lobby,
-        message: name + ': ' + message
+        message: message
       });
-      $('#messageField').val('');
+      $scope.lobby.messageField = '';
     }
     return false;
   };
 
   $scope.openModal = function(partial) {
     $scope.modal = partial;
-    $('#modal').show();
+    $('#modal').fadeIn(100);
+    $('#wcconent').fadeTo(100, 0.1);
   };
 
   $scope.closeModal = function() {
     $scope.modal = null;
-    $('#modal').hide();
+    $('#modal').fadeOut(100);
+    $('#wcconent').fadeTo(100, 1);
   };
 
   $scope.lobbyNew = function(lobbyName) {
