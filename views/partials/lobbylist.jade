@@ -1,0 +1,7 @@
+#lobbies
+  p
+    button(ng-click="newLobby()") New Lobby
+  p(ng-repeat='lobby in lobbies')
+    | {{ lobby.name }} -
+    button.lobbyJoin(ng-click='lobbyJoin(lobby.name)')
+      | Join

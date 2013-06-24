@@ -1,9 +1,4 @@
 extends layout
 block body
   body(ng-controller='WCController')
-    div#loginContent
-      include partials/login
-    div#listingContent.hidden
-      include partials/listing
-    div#chatContent.hidden
-      include partials/chat
+    div#wccontent(view='partial')

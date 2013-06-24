@@ -5,5 +5,5 @@ form#messageForm(ng-submit='sendMessage()')
   | Send a message:&nbsp;
   input#messageField.messageField(type='text', ng-model='messageField')
   input#messageSubmit(type='submit', value='Send')
-button.lobbyLeave
+button(ng-click="lobbyLeave()")
   | Leave Room

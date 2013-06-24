@@ -1,7 +1,0 @@
-#lobbies
-  p
-    button#newLobby New Lobby
-  p(ng-repeat='lobby in lobbies')
-    | {{ lobby.name }} -
-    button.lobbyJoin(room='{{ lobby.name }}')
-      | Join
