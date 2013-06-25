@@ -13,6 +13,8 @@ angular.module('wc.directives', [], function($compileProvider) {
               element.html(data);
               $compile(element.contents())(scope);
             });
+          } else {
+            element.html('');
           }
         }
       );

@@ -47,6 +47,16 @@ controllers.WCController = function ($scope, socket) {
     }
   };
 
+  $scope.contentClicked = function($event) {
+    // make modal popup go away
+    if ($scope.modal !== null && $event.target.nodeName !== 'BUTTON') {
+      $('#modal').fadeOut(100, function() {
+        $scope.modal = null;
+      });
+      $('#wccontent').fadeTo(100, 1);
+    }
+  };
+
   $scope.submitName = function(name) {
     $scope.mainview = 'lobbylist';
     socket.emit('name:chosen', {
@@ -76,13 +86,13 @@ controllers.WCController = function ($scope, socket) {
   $scope.openModal = function(partial) {
     $scope.modal = partial;
     $('#modal').fadeIn(100);
-    $('#wcconent').fadeTo(100, 0.1);
+    $('#wccontent').fadeTo(100, 0.5);
   };
 
   $scope.closeModal = function() {
     $scope.modal = null;
     $('#modal').fadeOut(100);
-    $('#wcconent').fadeTo(100, 1);
+    $('#wccontent').fadeTo(100, 1);
   };
 
   $scope.lobbyNew = function(lobbyName) {
