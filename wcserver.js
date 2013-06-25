@@ -22,8 +22,23 @@ userSchema.statics.findByID = function(id, callback) {
   this.findOne({id: new RegExp(id, 'i')}, callback);
 };
 
+var lobbySchema = mongoose.Schema({
+  name: String,
+  limit: Number
+});
+lobbySchema.statics.findByName = function(name, callback) {
+  this.findOne({name: new RegExp(name, 'i')}, callback);
+};
+lobbySchema.statics.removeByName = function(name, callback) {
+  this.findOne({name: new RegExp(name, 'i')}, callback).remove();
+};
+lobbySchema.statics.findAll = function(callback) {
+  this.find({}, callback);
+};
+
 // ---- [ mongoose models ] ---------------------------------------------------
 var User = mongoose.model('User', userSchema);
+var Lobby = mongoose.model('Lobby', lobbySchema);
 
 // ---- [ jade ] ---------------------------------------------------
 app.configure(function(){
@@ -70,6 +85,13 @@ function broadcastLobbies() {
       lobbies.push(lobby);
     }
   }
+  Lobby.findAll(function(err, data) {
+    for (var i in data) {
+      if (lobbies.indexOf(data[i].name) === -1) {
+        Lobby.removeByName(data[i].name);
+      }
+    }
+  });
   io.sockets.emit('lobby:list', {
     lobbies: lobbies
   });
@@ -83,15 +105,20 @@ function clearMessages(socket) {
 // joins socket lobby
 // data must have data.lobby
 function joinLobby(socket, data) {
+  var lobbyName = data.lobby;
   if (data !== null) {
-    var lobby = data.lobby;
-    socket.join(lobby);
+    var lobby = new Lobby({
+      name: lobbyName,
+      limit: 8
+    });
+    lobby.save();
+    socket.join(lobbyName);
     User.findByID(socket.id, function(err, data) {
       var name = data.name;
       clearMessages(socket);
       lobbyMessage(socket, {
-        lobby: lobby,
-        message: name + ' has joined ' + lobby + '.'
+        lobby: lobbyName,
+        message: name + ' has joined ' + lobbyName + '.'
       });
       broadcastLobbies();
     });
