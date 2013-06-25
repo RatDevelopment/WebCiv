@@ -26,6 +26,10 @@ body {
   display: none;
 }
 
+.error {
+  color: #ff0000;
+}
+
 .modal {
   background-color: #ffffff;
   -moz-box-shadow: 0 0 5px #474747;
