@@ -85,7 +85,7 @@ jQuery(function($){
     var mousedownx = 0;
     var mousedowny = 0;
     var mousedowncam = {};
-    $(document).mousedown(function(e) {
+    $(document).bind('movestart', function(e) {
       mouseIsDown = true;
       mousedownx = e.pageX;
       mousedowny = e.pageY;
@@ -94,10 +94,10 @@ jQuery(function($){
         y: camera.position.y
       };
     });
-    $(document).mouseup(function() {
+    $(document).bind('moveend', function() {
       mouseIsDown = false;
     });
-    $(document).mousemove(function(e) {
+    $(document).bind('move', function(e) {
       if (mouseIsDown) {
         var mousex = e.pageX;
         var mousey = e.pageY;
