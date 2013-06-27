@@ -10,6 +10,9 @@ jQuery(function($){
     // custom settings
     $.extend(settings, options);
 
+    // constants
+    var YSPACE = Math.floor(3*settings.tileSize/4);
+
     // materials
     function material(image) {
       var t = new THREE.ImageUtils.loadTexture(image);
@@ -29,9 +32,14 @@ jQuery(function($){
     };
 
     // hexagon
-    function getHexagon(x, y, z, material) {
-      var shape = new THREE.ShapeGeometry();
-
+    function addHexagon(tile) {
+      var plane = new THREE.Mesh(new THREE.PlaneGeometry(
+        settings.tileSize, settings.tileSize, 4, 4),
+        materials[tile.type]);
+      var xoffset = Math.abs(tile.y) % 2 === 1 ? settings.tileSize/2 : 0;
+      plane.position.x = tile.x*settings.tileSize + xoffset;
+      plane.position.y = tile.y*YSPACE;
+      scene.add(plane);
     }
 
     // object will contain public methods to interact with the grid
@@ -63,21 +71,11 @@ jQuery(function($){
     el.html(renderer.domElement);
 
     // geo setup
-    var plane = new THREE.Mesh(new THREE.PlaneGeometry(
-      settings.tileSize, settings.tileSize, 4, 4),
-      materials.ground);
-    scene.add(plane);
-    var plane2 = new THREE.Mesh(new THREE.PlaneGeometry(
-      settings.tileSize, settings.tileSize, 4, 4),
-      materials.water);
-    plane2.position.x +=  128;
-    scene.add(plane2);
-    var plane3 = new THREE.Mesh(new THREE.PlaneGeometry(
-      settings.tileSize, settings.tileSize, 4, 4),
-      materials.water);
-    plane3.position.x +=  settings.tileSize/2;
-    plane3.position.y += Math.floor(settings.tileSize*3/4);
-    scene.add(plane3);
+    for (var i = 0; i < settings.map.rows; i++) {
+      for (var j = 0; j < settings.map.rows; j++) {
+        addHexagon(settings.map.getTile(i, j));
+      }
+    }
 
     // render scene
     object.render();
@@ -103,7 +101,7 @@ jQuery(function($){
       if (mouseIsDown) {
         var mousex = e.pageX;
         var mousey = e.pageY;
-        var newx = mousedownx - mousex -mousedowncam.x;
+        var newx = mousedowncam.x - mousex + mousedownx;
         var newy = mousedowncam.y + mousey - mousedowny;
         camera.position.x = newx;
         camera.position.y = newy;
