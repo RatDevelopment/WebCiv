@@ -1,59 +1,3 @@
-// "classes"
-
-function sprite(src) {
-  var img = new Image();
-  img.src = 'res/img/' + src;
-  return img;
-}
-
-// sprites
-var sprites = {
-  ground: sprite('ground.png'),
-  water: sprite('water.png'),
-  blank: sprite('blank.png')
-};
-
-// functions
-function translate(point, translation) {
-  return point2D(point.x+translation.x, point.y+translation.y);
-}
-
-function verticalDilute(point, dilution) {
-  return point2D(point.x, point.y/dilution);
-}
-
-function toIso(point, camera) {
-  var translatedPoint = translate(point, camera);
-  var isox = Math.floor(translatedPoint.x);
-  var isoy = Math.floor(translatedPoint.y);
-  return point2D(isox, isoy);
-}
-
-function drawSprite(tile, tileWidth, yspace, camera, context) {
-  var xoffset = Math.abs(tile.y) % 2 === 1 ? tileWidth/2 : 0;
-  var spritePoint = toIso(point2D(xoffset + tile.x*tileWidth,
-    tile.y*yspace), camera);
-  context.drawImage(sprites[tile.type], spritePoint.x, spritePoint.y);
-}
-
-function drawGrid(map, tileWidth, tileHeight, canvasId, camera) {
-  var docwidth = $(window).width();
-  var docheight = $(window).height()-5;
-  var canvas = document.getElementById(canvasId);
-  $('#' + canvasId).attr("width", docwidth);
-  $('#' + canvasId).attr("height", docheight);
-  var context = canvas.getContext('2d');
-  var yspace = Math.floor(3*tileHeight/4);
-  var camx = Math.floor(-1*camera.x/tileWidth);
-  var camy = Math.floor(-1*camera.y/yspace);
-  for (var i = -1; i <= Math.ceil(docwidth/tileWidth); i++) {
-    for (var j = -1; j <= Math.ceil(docheight/yspace); j++) {
-      var tile = map.getTile(i+camx, j+camy);
-        drawSprite(tile, tileWidth, yspace, camera, context);
-    }
-  }
-}
-
 // $.fn.isogrid implementation
 jQuery(function($){
   $.fn.isogrid = function(options) {
@@ -67,36 +11,75 @@ jQuery(function($){
     // custom settings
     $.extend(settings, options);
 
-    // make camera, center it
-    var camera = point2D(-1*settings.map.cols*settings.tileWidth/2,
-      -1*settings.map.rows*settings.tileHeight/2);
-    camera = point2D(0,0);
-
-    // initialize grid
-    function init() {
-      // generate grid
-      object.redraw();
+    // materials
+    function material(image) {
+      var t = new THREE.ImageUtils.loadTexture(image);
+      var m = new THREE.MeshBasicMaterial({
+        map: t,
+        overdraw: true,
+        transparent: true,
+        dynamic: true
+      });
+      return m;
     }
 
-    // object will contain methods to interact with the grid
+    var materials = {
+      'blank': material('res/img/blank.png'),
+      'water': material('res/img/water.png'),
+      'ground': material('res/img/ground.png')
+    };
+
+    // hexagon
+    function getHexagon(x, y, z, material) {
+      var shape = new THREE.ShapeGeometry();
+
+    }
+
+    // object will contain public methods to interact with the grid
     var object = {
-      update: function(data) {
-        // update
-      },
-      translate: function(vector) {
-        // translate
-      },
-      redraw: function() {
-        drawGrid(settings.map, settings.tileWidth, settings.tileHeight,
-          elid, camera);
+      render: function() {
+        requestAnimationFrame(object.render);
+
+        renderer.render(scene, camera);
       }
     };
 
-    // creating the canvas
+    // element
     var el = $(this);
-    var elid = $(this).attr('id');
-    el.html('<canvas id="game"></canvas>');
-    var tileLayer = $('#game');
+
+    // scene
+    var scene = new THREE.Scene();
+
+    // camera
+    var camera = new THREE.PerspectiveCamera(60,
+      window.innerWidth/(window.innerHeight-4), 0.1, 1000);
+    camera.position.z = 500;
+    camera.position.x = 50;
+    camera.position.y = -200;
+    camera.rotation.x = 0.5;
+
+    // renderer
+    var renderer = new THREE.CanvasRenderer();
+    renderer.setSize(window.innerWidth, window.innerHeight-4);
+    el.html(renderer.domElement);
+
+    // geo setup
+
+    var plane = new THREE.Mesh(new THREE.PlaneGeometry(128, 106, 4, 4),
+      materials.ground);
+    scene.add(plane);
+    var plane2 = new THREE.Mesh(new THREE.PlaneGeometry(128, 106, 4, 4),
+      materials.water);
+    plane2.position.x +=  128;
+    scene.add(plane2);
+    var plane3 = new THREE.Mesh(new THREE.PlaneGeometry(128, 106, 4, 4),
+      materials.water);
+    plane3.position.x +=  64;
+    plane3.position.y += Math.floor(106*3/4);
+    scene.add(plane3);
+
+    // render scene
+    object.render();
 
     // mouse pan handler
     var mouseIsDown = false;
@@ -105,37 +88,33 @@ jQuery(function($){
     var mousedowncam = {};
     $(document).mousedown(function(e) {
       mouseIsDown = true;
-      el.css('cursor', 'move');
       mousedownx = e.pageX;
       mousedowny = e.pageY;
       mousedowncam = {
-        x: camera.x,
-        y: camera.y
+        x: camera.position.x,
+        y: camera.position.y
       };
     });
     $(document).mouseup(function() {
       mouseIsDown = false;
-      el.css('cursor', 'default');
     });
     $(document).mousemove(function(e) {
       if (mouseIsDown) {
         var mousex = e.pageX;
         var mousey = e.pageY;
-        var newx = mousedowncam.x + mousex - mousedownx;
+        var newx = mousedownx - mousex -mousedowncam.x;
         var newy = mousedowncam.y + mousey - mousedowny;
-        camera.x = newx;
-        camera.y = newy;
-        object.redraw();
+        camera.position.x = newx;
+        camera.position.y = newy;
       }
     });
 
     // resize handler
     $(window).resize(function() {
-      object.redraw();
+      camera.aspect = window.innerWidth/(window.innerHeight-4);
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight-4);
     });
-
-    // init on load image
-    sprites.ground.onload = init;
 
     return object;
   };

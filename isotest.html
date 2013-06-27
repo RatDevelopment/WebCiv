@@ -4,11 +4,12 @@
     <title>WebCiv</title>
     <link rel="stylesheet" type="text/css" href="res/css/style.css">
     <script src="res/lib/jquery.min.js"></script>
+    <script src="res/lib/three.min.js"></script>
     <script src="res/js/generator.js"></script>
     <script src="res/js/isogrid.js"></script>
   </head>
   <body>
-    <canvas id="test"></canvas>
+    <div class="game" id="test"></div>
     <script>
       var map = getMap(50, 50);
       jQuery(function($) {

@@ -8,7 +8,7 @@ var io = require('socket.io').listen(server);
 server.listen(1337);
 
 app.get('/', function(req, res) {
-  res.sendfile(__dirname + '/index.html');
+  res.sendfile(__dirname + '/isotest.html');
 });
 
 app.get('/res/:type/:file', function(req, res) {
