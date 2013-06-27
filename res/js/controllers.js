@@ -23,8 +23,8 @@ controllers.WCController = function ($scope, socket) {
   });
 
   socket.on('lobby:join', function(data) {
-    var lobby = data.lobby;
-    $.localStorage('lobby', lobby);
+    var lobbyName = data.lobbyName;
+    $.localStorage('lobby', lobbyName);
     $scope.mainview = 'lobby';
   });
 
@@ -71,11 +71,11 @@ controllers.WCController = function ($scope, socket) {
 
   $scope.sendMessage = function(message) {
     var name = $.localStorage('username');
-    var lobby = getLobby();
+    var lobbyName = getLobbyName();
     if (message) {
       socket.emit('message', {
         name: name,
-        lobby: lobby,
+        lobbyName: lobbyName,
         message: message
       });
       $scope.lobby.messageField = '';
@@ -104,29 +104,29 @@ controllers.WCController = function ($scope, socket) {
   };
 
   $scope.lobbyLeave = function() {
-    var lobby = $.localStorage('lobby');
+    var lobbyName = $.localStorage('lobby');
     $.localStorage('lobby', '');
     $scope.mainview = 'lobbylist';
     socket.emit('lobby:leave', {
-      lobby: lobby
+      lobbyName: lobbyName
     });
   };
 
-  $scope.lobbyJoin = function(lobby) {
-    $.localStorage('lobby', lobby);
+  $scope.lobbyJoin = function(lobbyName) {
+    $.localStorage('lobby', lobbyName);
     $scope.mainview = 'lobby';
     socket.emit('lobby:join', {
-      lobby: lobby
+      lobbyName: lobbyName
     });
   };
 
   // --- [ helpder functions ] ------------------------------------------------
-  var getLobby = function() {
-    var lobby = $.localStorage('lobby');
-    if (!lobby) {
-      lobby = '';
+  var getLobbyName = function() {
+    var lobbyName = $.localStorage('lobby');
+    if (!lobbyName) {
+      lobbyName = '';
     }
-    return lobby;
+    return lobbyName;
   };
 };
 
