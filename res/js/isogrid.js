@@ -4,8 +4,7 @@ jQuery(function($){
     // settings
     var settings = {
       map: {},
-      tileWidth: 128,
-      tileHeight: 106
+      tileSize: 128
     };
 
     // custom settings
@@ -64,18 +63,20 @@ jQuery(function($){
     el.html(renderer.domElement);
 
     // geo setup
-
-    var plane = new THREE.Mesh(new THREE.PlaneGeometry(128, 106, 4, 4),
+    var plane = new THREE.Mesh(new THREE.PlaneGeometry(
+      settings.tileSize, settings.tileSize, 4, 4),
       materials.ground);
     scene.add(plane);
-    var plane2 = new THREE.Mesh(new THREE.PlaneGeometry(128, 106, 4, 4),
+    var plane2 = new THREE.Mesh(new THREE.PlaneGeometry(
+      settings.tileSize, settings.tileSize, 4, 4),
       materials.water);
     plane2.position.x +=  128;
     scene.add(plane2);
-    var plane3 = new THREE.Mesh(new THREE.PlaneGeometry(128, 106, 4, 4),
+    var plane3 = new THREE.Mesh(new THREE.PlaneGeometry(
+      settings.tileSize, settings.tileSize, 4, 4),
       materials.water);
-    plane3.position.x +=  64;
-    plane3.position.y += Math.floor(106*3/4);
+    plane3.position.x +=  settings.tileSize/2;
+    plane3.position.y += Math.floor(settings.tileSize*3/4);
     scene.add(plane3);
 
     // render scene
