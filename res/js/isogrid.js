@@ -48,6 +48,7 @@ jQuery(function($){
         amount: tile.elevation,
         bevelEnabled: false
       });
+      // uv mapping
       geometry.faceUvs = [[]];
       geometry.faceVertexUvs = [[]];
       for (var f = 0; f < geometry.faces.length; f++) {
@@ -57,9 +58,37 @@ jQuery(function($){
             new THREE.Vector2(1, 0),
             new THREE.Vector2(0, 0)
         ];
+        if (f === 7) {
+          geometry.faceVertexUvs[0].push([
+            new THREE.Vector2(0, 0.75),
+            new THREE.Vector2(0.5, 0),
+            new THREE.Vector2(1, 0.75)
+          ]);
+        } else if (f === 4) {
+          geometry.faceVertexUvs[0].push([
+            new THREE.Vector2(0, 0.75),
+            new THREE.Vector2(0, 0.25),
+            new THREE.Vector2(0.5, 0)
+          ]);
+        } else if (f === 5) {
+          geometry.faceVertexUvs[0].push([
+            new THREE.Vector2(0.5, 0),
+            new THREE.Vector2(1, 0.25),
+            new THREE.Vector2(1, 0.75)
+          ]);
+        } else if (f === 6) {
+          geometry.faceVertexUvs[0].push([
+            new THREE.Vector2(1, 0.75),
+            new THREE.Vector2(0.5, 1),
+            new THREE.Vector2(0, 0.75)
+          ]);
+
+        } else {
+          geometry.faceVertexUvs[0].push(faceuv);
+        }
         geometry.faceUvs[0].push(new THREE.Vector2(0,1));
-        geometry.faceVertexUvs[0].push(faceuv);
       }
+      // end uv mapping
       var mesh = new THREE.Mesh(geometry, materials[tile.type]);
       var xoffset = Math.abs(tile.y) % 2 === 1 ? settings.tileSize/2 : 0;
       mesh.position.x = tile.x*settings.tileSize + xoffset;
@@ -129,6 +158,7 @@ jQuery(function($){
         var tilePoint = intersects[0].object.tilePoint;
         var tile = settings.map.getTile(tilePoint.x, tilePoint.y);
         // do something with tile
+        console.log(tile);
       }
     }
     el.click(mouseTile);
