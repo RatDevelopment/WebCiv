@@ -52,39 +52,42 @@ jQuery(function($){
       geometry.faceUvs = [[]];
       geometry.faceVertexUvs = [[]];
       for (var f = 0; f < geometry.faces.length; f++) {
-        var faceuv = [
+        switch(f) {
+          case 4:
+            geometry.faceVertexUvs[0].push([
+              new THREE.Vector2(0, 0.75),
+              new THREE.Vector2(0, 0.25),
+              new THREE.Vector2(0.5, 0)
+            ]);
+            break;
+          case 5:
+            geometry.faceVertexUvs[0].push([
+              new THREE.Vector2(0.5, 0),
+              new THREE.Vector2(1, 0.25),
+              new THREE.Vector2(1, 0.75)
+            ]);
+            break;
+          case 6:
+            geometry.faceVertexUvs[0].push([
+              new THREE.Vector2(1, 0.75),
+              new THREE.Vector2(0.5, 1),
+              new THREE.Vector2(0, 0.75)
+            ]);
+            break;
+          case 7:
+            geometry.faceVertexUvs[0].push([
+              new THREE.Vector2(0, 0.75),
+              new THREE.Vector2(0.5, 0),
+              new THREE.Vector2(1, 0.75)
+            ]);
+            break;
+          default:
+            geometry.faceVertexUvs[0].push([
             new THREE.Vector2(0, 0.25),
             new THREE.Vector2(1, 0.25),
             new THREE.Vector2(1, 0),
             new THREE.Vector2(0, 0)
-        ];
-        if (f === 7) {
-          geometry.faceVertexUvs[0].push([
-            new THREE.Vector2(0, 0.75),
-            new THREE.Vector2(0.5, 0),
-            new THREE.Vector2(1, 0.75)
-          ]);
-        } else if (f === 4) {
-          geometry.faceVertexUvs[0].push([
-            new THREE.Vector2(0, 0.75),
-            new THREE.Vector2(0, 0.25),
-            new THREE.Vector2(0.5, 0)
-          ]);
-        } else if (f === 5) {
-          geometry.faceVertexUvs[0].push([
-            new THREE.Vector2(0.5, 0),
-            new THREE.Vector2(1, 0.25),
-            new THREE.Vector2(1, 0.75)
-          ]);
-        } else if (f === 6) {
-          geometry.faceVertexUvs[0].push([
-            new THREE.Vector2(1, 0.75),
-            new THREE.Vector2(0.5, 1),
-            new THREE.Vector2(0, 0.75)
-          ]);
-
-        } else {
-          geometry.faceVertexUvs[0].push(faceuv);
+        ]);
         }
         geometry.faceUvs[0].push(new THREE.Vector2(0,1));
       }
