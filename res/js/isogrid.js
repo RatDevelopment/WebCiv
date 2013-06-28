@@ -135,13 +135,15 @@ jQuery(function($){
       }
     }
 
-    // directional lighting
-    var directionalLight = new THREE.DirectionalLight(0xffffff);
-    directionalLight.position.x = settings.map.cols*settings.tileSize/2;
-    directionalLight.position.z = 5000;
-    directionalLight.rotation.x = 0.5;
-    directionalLight.distance = 1000;
-    scene.add(directionalLight);
+    // hemisphere light
+    var hemisphereLight = new THREE.HemisphereLight(0xffffff, 0.3);
+    scene.add(hemisphereLight);
+
+    // point light
+    var pointLight = new THREE.PointLight(0xffffff, 0.7);
+    pointLight.position.set(0,window.innerHeight/3,300);
+    pointLight.rotation.y = Math.PI/2;
+    scene.add(pointLight);
 
     // render scene
     object.render();
@@ -161,7 +163,6 @@ jQuery(function($){
         var tilePoint = intersects[0].object.tilePoint;
         var tile = settings.map.getTile(tilePoint.x, tilePoint.y);
         // do something with tile
-        console.log(tile);
       }
     }
     el.click(mouseTile);
@@ -191,6 +192,8 @@ jQuery(function($){
         var newy = mousedowncam.y + mousey - mousedowny;
         camera.position.x = newx;
         camera.position.y = newy;
+        pointLight.position.x = newx;
+        pointLight.position.y = newy + window.innerHeight/3;
       }
     });
 
