@@ -124,7 +124,9 @@ jQuery(function($){
     camera.rotation.x = 0.5;
 
     // renderer
-    var renderer = new THREE.WebGLRenderer();
+    var renderer = new THREE.WebGLRenderer({
+      antialiasing: true
+    });
     renderer.setSize(window.innerWidth, window.innerHeight-4);
     el.html(renderer.domElement);
 
@@ -151,8 +153,8 @@ jQuery(function($){
     // find clicked tile
     projector = new THREE.Projector();
     function mouseTile(e) {
-      var vector = new THREE.Vector3((event.clientX / window.innerWidth)*2 - 1,
-        -1*(event.clientY / window.innerHeight) * 2 + 1, 0.5);
+      var vector = new THREE.Vector3((e.clientX / window.innerWidth)*2 - 1,
+        -1*(e.clientY / window.innerHeight) * 2 + 1, 0.5);
       projector.unprojectVector(vector, camera);
       var raycaster = new THREE.Raycaster(camera.position,
         vector.sub(camera.position).normalize());
