@@ -53,8 +53,8 @@ jQuery(function($){
       geometry.faceVertexUvs = [[]];
       for (var f = 0; f < geometry.faces.length; f++) {
         var faceuv = [
-            new THREE.Vector2(0, 1),
-            new THREE.Vector2(1, 1),
+            new THREE.Vector2(0, 0.25),
+            new THREE.Vector2(1, 0.25),
             new THREE.Vector2(1, 0),
             new THREE.Vector2(0, 0)
         ];
