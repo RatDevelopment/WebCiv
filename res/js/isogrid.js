@@ -9,6 +9,7 @@ jQuery(function($){
 
     // custom settings
     $.extend(settings, options);
+    settings.map.objects = [];
 
     // constants
     var YSPACE = Math.floor(3*settings.tileSize/4);
@@ -63,7 +64,9 @@ jQuery(function($){
       var xoffset = Math.abs(tile.y) % 2 === 1 ? settings.tileSize/2 : 0;
       mesh.position.x = tile.x*settings.tileSize + xoffset;
       mesh.position.y = tile.y*YSPACE;
-      settings.map.tiles[tile.x][tile.y].mesh = mesh;
+      var tilePoint = point2D(tile.x, tile.y);
+      mesh.tilePoint = tilePoint;
+      settings.map.objects.push(mesh);
       scene.add(mesh);
     }
 
@@ -110,6 +113,25 @@ jQuery(function($){
 
     // render scene
     object.render();
+
+    // find clicked tile
+    projector = new THREE.Projector();
+    function mouseTile(e) {
+      var vector = new THREE.Vector3((event.clientX / window.innerWidth)*2 - 1,
+        -1*(event.clientY / window.innerHeight) * 2 + 1, 0.5);
+      projector.unprojectVector(vector, camera);
+      var raycaster = new THREE.Raycaster(camera.position,
+        vector.sub(camera.position).normalize());
+      var intersects = raycaster.intersectObjects(settings.map.objects);
+
+      if (intersects.length > 0) {
+        intersects[0].object.position.z += 10;
+        var tilePoint = intersects[0].object.tilePoint;
+        var tile = settings.map.getTile(tilePoint.x, tilePoint.y);
+        // do something with tile
+      }
+    }
+    el.click(mouseTile);
 
     // mouse pan handler
     var mouseIsDown = false;
