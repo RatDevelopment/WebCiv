@@ -6,12 +6,13 @@ function point2D(x, y) {
   return result;
 }
 
-function tile(x, y, type, neighbors) {
+function tile(x, y, type, neighbors, elevation) {
   return {
     x: x,
     y: y,
     type: type,
-    neighbors: neighbors
+    neighbors: neighbors,
+    elevation: elevation
   };
 }
 
@@ -27,9 +28,9 @@ function getTile(x, y) {
   }
   var result = this.tiles[tx][ty];
   if (typeof result === "undefined") {
-    return tile(x, y, "blank", {});
+    return tile(x, y, "blank", {}, result.elevation);
   } else {
-    return tile(x, y, result.type, result.neighbors);
+    return tile(x, y, result.type, result.neighbors, result.elevation);
   }
 }
 
@@ -47,6 +48,10 @@ function getMap(rows, cols) {
     map.tiles[i] = [];
     for (var j = 0; j < rows; j++) {
       var type = Math.random() < 0.7 ? "ground" : "water";
+      var elevation = 30;
+      if (type === 'water') {
+        elevation = 10;
+      }
       // neighbors will be a list of point2D elements
       var neighbors = {};
       if (j !== 0) {
@@ -89,7 +94,8 @@ function getMap(rows, cols) {
       } else {
         neighbors.right = point2D(i+1, j);
       }
-      map.tiles[i][j] = tile(i, j, type, neighbors);
+      // create tile
+      map.tiles[i][j] = tile(i, j, type, neighbors, elevation);
     }
   }
   return map;
