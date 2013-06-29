@@ -102,6 +102,7 @@ jQuery(function($){
       mesh.position.y = tile.y*YSPACE;
       var tilePoint = point2D(tile.x, tile.y);
       mesh.tilePoint = tilePoint;
+      settings.map.tiles[tile.x][tile.y].mesh = mesh;
       settings.map.objects.push(mesh);
       scene.add(mesh);
     }
@@ -150,6 +151,31 @@ jQuery(function($){
         }
 
         renderer.render(scene, camera);
+      },
+      'focusTile': function(point) {
+        // get tile
+        var t = settings.map.tiles[point.x][point.y];
+        // zoom to tile mesh
+        cameraTarget = {};
+        cameraTarget.position = new THREE.Vector3();
+        cameraTarget.rotation = new THREE.Vector3();
+        cameraTarget.position.copy(t.mesh.position);
+        cameraTarget.rotation.copy(t.mesh.rotation);
+        cameraTarget.position.x += Math.floor(settings.tileSize/2);
+        cameraTarget.position.y += Math.floor(settings.tileSize/2);
+        pointLight.position.x = camera.position.x;
+        pointLight.position.y = camera.position.y;
+        focus = true;
+
+      },
+      'unFocus': function() {
+        cameraTarget = {};
+        cameraTarget.position = new THREE.Vector3();
+        cameraTarget.rotation = new THREE.Vector3();
+        cameraTarget.position.copy(camera.position);
+        cameraTarget.position.y -= window.innerHeight/3;
+        cameraTarget.rotation = new THREE.Vector3(0.5,0,0);
+        focus = false;
       }
     };
 
@@ -203,28 +229,15 @@ jQuery(function($){
       var intersects = raycaster.intersectObjects(settings.map.objects);
 
       if (intersects.length > 0) {
-        // zoom to tile mesh
-        cameraTarget = {};
-        cameraTarget.position = new THREE.Vector3();
-        cameraTarget.rotation = new THREE.Vector3();
-        if (!focus) {
-          cameraTarget.position.copy(intersects[0].object.position);
-          cameraTarget.rotation.copy(intersects[0].object.rotation);
-          cameraTarget.position.x += Math.floor(settings.tileSize/2);
-          cameraTarget.position.y += Math.floor(settings.tileSize/2);
-          pointLight.position.x = camera.position.x;
-          pointLight.position.x = camera.position.x;
-          focus = true;
-        } else {
-          cameraTarget.position.copy(camera.position);
-          cameraTarget.position.y -= window.innerHeight/3;
-          cameraTarget.rotation = new THREE.Vector3(0.5,0,0);
-          focus = false;
-        }
         // get tile
         var tilePoint = intersects[0].object.tilePoint;
         var tile = settings.map.getTile(tilePoint.x, tilePoint.y);
         // do something with tile
+        if (!focus) {
+          object.focusTile(tile);
+        } else {
+          object.unFocus();
+        }
       }
     }
     el.click(mouseTile);
