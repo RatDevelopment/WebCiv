@@ -106,48 +106,45 @@ jQuery(function($){
       scene.add(mesh);
     }
 
+    // transition step for animation
+    function transitionStep(current, target, step) {
+      var completed = true;
+      if (current < target - step) {
+        current += step;
+        completed = false;
+      } else if (current > target + step) {
+        current -= step;
+        completed = false;
+      } else {
+        current = target;
+      }
+      var result = {};
+      result.current = current;
+      result.completed = completed;
+      return result;
+    }
+
     // object will contain public methods to interact with the grid
     var object = {
       render: function() {
         requestAnimationFrame(object.render);
 
+        // animate camera to target if there is a target
         if (cameraTarget !== null) {
           var rotStep = 0.02;
-          var xstep = 20;
-          var ystep = 20;
-          var completed = true;
-
-          if (camera.rotation.x < cameraTarget.rotation.x - rotStep) {
-            camera.rotation.x += rotStep;
-            completed = false;
-          } else if (camera.rotation.x > cameraTarget.rotation.x + rotStep) {
-            camera.rotation.x -= rotStep;
-            completed = false;
-          } else {
-            camera.rotation = cameraTarget.rotation;
-          }
-
-          if (camera.position.x < cameraTarget.position.x - xstep) {
-            camera.position.x += xstep;
-            completed = false;
-          } else if (camera.position.x > cameraTarget.position.x + xstep) {
-            camera.position.x -= xstep;
-            completed = false;
-          } else {
-            camera.position.x = cameraTarget.position.x;
-          }
-
-          if (camera.position.y < cameraTarget.position.y - ystep) {
-            camera.position.y += ystep;
-            completed = false;
-          } else if (camera.position.y > cameraTarget.position.y + ystep) {
-            camera.position.y -= ystep;
-            completed = false;
-          } else {
-            camera.position.y = cameraTarget.position.y;
-          }
-
-          if (completed) {
+          var xStep = 20;
+          var yStep = 20;
+          var completedRot = transitionStep(camera.rotation.x,
+            cameraTarget.rotation.x, rotStep);
+          camera.rotation.x = completedRot.current;
+          var completedPosX = transitionStep(camera.position.x,
+            cameraTarget.position.x, xStep);
+          camera.position.x = completedPosX.current;
+          var completedPosY = transitionStep(camera.position.y,
+            cameraTarget.position.y, yStep);
+          camera.position.y = completedPosY.current;
+          if (completedRot.completed && completedPosX.completed &&
+            completedPosY.completed) {
             cameraTarget = null;
           }
         }
