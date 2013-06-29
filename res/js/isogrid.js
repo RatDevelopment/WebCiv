@@ -15,6 +15,10 @@ jQuery(function($){
     var YSPACE = Math.floor(3*settings.tileSize/4);
     var SIDE = Math.floor(settings.tileSize/4);
 
+    // camera target
+    var cameraTarget = null;
+    var focus = false;
+
     // shapes
     var hexagonShape = new THREE.Shape();
     hexagonShape.moveTo(settings.tileSize/2, 0);
@@ -107,6 +111,47 @@ jQuery(function($){
       render: function() {
         requestAnimationFrame(object.render);
 
+        if (cameraTarget !== null) {
+          var rotStep = 0.02;
+          var xstep = 20;
+          var ystep = 20;
+          var completed = true;
+
+          if (camera.rotation.x < cameraTarget.rotation.x - rotStep) {
+            camera.rotation.x += rotStep;
+            completed = false;
+          } else if (camera.rotation.x > cameraTarget.rotation.x + rotStep) {
+            camera.rotation.x -= rotStep;
+            completed = false;
+          } else {
+            camera.rotation = cameraTarget.rotation;
+          }
+
+          if (camera.position.x < cameraTarget.position.x - xstep) {
+            camera.position.x += xstep;
+            completed = false;
+          } else if (camera.position.x > cameraTarget.position.x + xstep) {
+            camera.position.x -= xstep;
+            completed = false;
+          } else {
+            camera.position.x = cameraTarget.position.x;
+          }
+
+          if (camera.position.y < cameraTarget.position.y - ystep) {
+            camera.position.y += ystep;
+            completed = false;
+          } else if (camera.position.y > cameraTarget.position.y + ystep) {
+            camera.position.y -= ystep;
+            completed = false;
+          } else {
+            camera.position.y = cameraTarget.position.y;
+          }
+
+          if (completed) {
+            cameraTarget = null;
+          }
+        }
+
         renderer.render(scene, camera);
       }
     };
@@ -143,7 +188,7 @@ jQuery(function($){
 
     // point light
     var pointLight = new THREE.PointLight(0xffffff, 0.7);
-    pointLight.position.set(0,window.innerHeight/3,300);
+    pointLight.position = camera.position;
     pointLight.rotation.y = Math.PI/2;
     scene.add(pointLight);
 
@@ -161,7 +206,25 @@ jQuery(function($){
       var intersects = raycaster.intersectObjects(settings.map.objects);
 
       if (intersects.length > 0) {
-        intersects[0].object.position.z += 10;
+        // zoom to tile mesh
+        cameraTarget = {};
+        cameraTarget.position = new THREE.Vector3();
+        cameraTarget.rotation = new THREE.Vector3();
+        if (!focus) {
+          cameraTarget.position.copy(intersects[0].object.position);
+          cameraTarget.rotation.copy(intersects[0].object.rotation);
+          cameraTarget.position.x += Math.floor(settings.tileSize/2);
+          cameraTarget.position.y += Math.floor(settings.tileSize/2);
+          pointLight.position.x = camera.position.x;
+          pointLight.position.x = camera.position.x;
+          focus = true;
+        } else {
+          cameraTarget.position.copy(camera.position);
+          cameraTarget.position.y -= window.innerHeight/3;
+          cameraTarget.rotation = new THREE.Vector3(0.5,0,0);
+          focus = false;
+        }
+        // get tile
         var tilePoint = intersects[0].object.tilePoint;
         var tile = settings.map.getTile(tilePoint.x, tilePoint.y);
         // do something with tile
@@ -194,8 +257,6 @@ jQuery(function($){
         var newy = mousedowncam.y + mousey - mousedowny;
         camera.position.x = newx;
         camera.position.y = newy;
-        pointLight.position.x = newx;
-        pointLight.position.y = newy + window.innerHeight/3;
       }
     });
 
