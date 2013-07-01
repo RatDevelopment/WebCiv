@@ -9,7 +9,7 @@ jQuery(function($){
 
     // custom settings
     $.extend(settings, options);
-    settings.map.objects = [];
+    settings.map.meshes = [];
 
     // constants
     var YSPACE = Math.floor(3*settings.tileSize/4);
@@ -103,7 +103,7 @@ jQuery(function($){
       var tilePoint = point2D(tile.x, tile.y);
       mesh.tilePoint = tilePoint;
       settings.map.tiles[tile.x][tile.y].mesh = mesh;
-      settings.map.objects.push(mesh);
+      settings.map.meshes.push(mesh);
       scene.add(mesh);
     }
 
@@ -226,7 +226,7 @@ jQuery(function($){
       projector.unprojectVector(vector, camera);
       var raycaster = new THREE.Raycaster(camera.position,
         vector.sub(camera.position).normalize());
-      var intersects = raycaster.intersectObjects(settings.map.objects);
+      var intersects = raycaster.intersectObjects(settings.map.meshes);
 
       if (intersects.length > 0) {
         // get tile
