@@ -16,24 +16,6 @@ function tile(x, y, type, neighbors, elevation) {
   };
 }
 
-// get tile function for generator
-function getTile(x, y) {
-  var tx = x;
-  var ty = y;
-  while (tx < 0) {
-    tx += this.cols;
-  }
-  while (tx > this.cols-1) {
-    tx -= this.cols;
-  }
-  var result = this.tiles[tx][ty];
-  if (typeof result === "undefined") {
-    return tile(x, y, "blank", {}, result.elevation);
-  } else {
-    return tile(x, y, result.type, result.neighbors, result.elevation);
-  }
-}
-
 function getMap(rows, cols) {
   if (rows % 2 !== 0 || cols % 2 !== 0) {
     throw "The number of rows and columns must be even.";
@@ -41,8 +23,7 @@ function getMap(rows, cols) {
   var map = {
     rows: rows,
     cols: cols,
-    tiles: [],
-    getTile: getTile
+    tiles: []
   };
   for (var i = 0; i < cols; i++) {
     map.tiles[i] = [];

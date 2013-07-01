@@ -60,7 +60,7 @@ jQuery(function($){
     // tilegrid setup
     for (var i = 0; i < settings.map.rows; i++) {
       for (var j = 0; j < settings.map.cols; j++) {
-        addHexagon(settings.map.getTile(i, j));
+        addHexagon(settings.map.tiles[i][j]);
       }
     }
 
@@ -208,7 +208,7 @@ jQuery(function($){
       if (intersects.length > 0) {
         // get tile
         var tilePoint = intersects[0].object.tilePoint;
-        var tile = settings.map.getTile(tilePoint.x, tilePoint.y);
+        var tile = settings.map.tiles[tilePoint.x][tilePoint.y];
         // do something with tile
         if (!focus) {
           object.focusTile(tile);
