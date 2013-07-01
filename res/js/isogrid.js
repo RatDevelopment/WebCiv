@@ -1,25 +1,24 @@
 // $.fn.isogrid implementation
 jQuery(function($){
   $.fn.isogrid = function(options) {
-    // settings
+    // ---- [ settings ] ------------------------------------------------------
     var settings = {
       map: {},
       tileSize: 128
     };
 
-    // custom settings
+    // override settings
     $.extend(settings, options);
+
+    // make array for hex meshes
     settings.map.meshes = [];
 
-    // constants
+    // ---- [ variables ] -----------------------------------------------------
+    //constants
     var YSPACE = Math.floor(3*settings.tileSize/4);
     var SIDE = Math.floor(settings.tileSize/4);
 
-    // camera target
-    var cameraTarget = null;
-    var focus = false;
-
-    // shapes
+    // hexagon shape for tiles
     var hexagonShape = new THREE.Shape();
     hexagonShape.moveTo(settings.tileSize/2, 0);
     hexagonShape.moveTo(settings.tileSize, SIDE);
@@ -29,23 +28,113 @@ jQuery(function($){
     hexagonShape.moveTo(0, SIDE);
     hexagonShape.moveTo(settings.tileSize/2, 0);
 
-    // materials
-    function material(image) {
-      var t = new THREE.ImageUtils.loadTexture(image);
-      var m = new THREE.MeshLambertMaterial({
-        map: t,
-        overdraw: true
-      });
-      return m;
+    // camera target
+    var cameraTarget = null;
+
+    // tile focus
+    var focus = false;
+
+    // ---- [ three.js setup ] ------------------------------------------------
+    // element
+    var el = $(this);
+
+    // scene
+    var scene = new THREE.Scene();
+
+    // camera
+    var camera = new THREE.PerspectiveCamera(60,
+      window.innerWidth/(window.innerHeight-4), 0.1, 5000);
+    camera.position.z = 500;
+    camera.rotation.x = 0.5;
+
+    // renderer
+    var renderer = new THREE.WebGLRenderer({
+      physicallyBasedShading: true
+    });
+    renderer.setSize(window.innerWidth, window.innerHeight-4);
+    el.html(renderer.domElement);
+
+    // used for finding what object is clicked
+    projector = new THREE.Projector();
+
+    // tilegrid setup
+    for (var i = 0; i < settings.map.rows; i++) {
+      for (var j = 0; j < settings.map.cols; j++) {
+        addHexagon(settings.map.getTile(i, j));
+      }
     }
 
-    var materials = {
-      'blank': material('res/img/blank.png'),
-      'water': material('res/img/water.png'),
-      'ground': material('res/img/ground.png')
+    // hemisphere light
+    var hemisphereLight = new THREE.HemisphereLight(0xffffff, 0.3);
+    scene.add(hemisphereLight);
+
+    // point light
+    var pointLight = new THREE.PointLight(0xffffff, 0.7);
+    pointLight.position = camera.position;
+    pointLight.rotation.y = Math.PI/2;
+    scene.add(pointLight);
+
+    // render scene
+    render();
+
+    // ---- [ functions ] -----------------------------------------------------
+    // three.js render
+    function render() {
+      requestAnimationFrame(render);
+
+      // animate camera to target if there is a target
+      if (cameraTarget !== null) {
+        var rotStep = 0.02;
+        var xStep = 20;
+        var yStep = 20;
+        var completedRot = transitionStep(camera.rotation.x,
+          cameraTarget.rotation.x, rotStep);
+        camera.rotation.x = completedRot.current;
+        var completedPosX = transitionStep(camera.position.x,
+          cameraTarget.position.x, xStep);
+        camera.position.x = completedPosX.current;
+        var completedPosY = transitionStep(camera.position.y,
+          cameraTarget.position.y, yStep);
+        camera.position.y = completedPosY.current;
+        if (completedRot.completed && completedPosX.completed &&
+          completedPosY.completed) {
+          cameraTarget = null;
+        }
+      }
+
+      renderer.render(scene, camera);
+    }
+
+    // object will contain public methods to interact with the grid
+    var object = {
+      'focusTile': function(point) {
+        // get tile
+        var t = settings.map.tiles[point.x][point.y];
+        // zoom to tile mesh
+        cameraTarget = {};
+        cameraTarget.position = new THREE.Vector3();
+        cameraTarget.rotation = new THREE.Vector3();
+        cameraTarget.position.copy(t.mesh.position);
+        cameraTarget.rotation.copy(t.mesh.rotation);
+        cameraTarget.position.x += Math.floor(settings.tileSize/2);
+        cameraTarget.position.y += Math.floor(settings.tileSize/2);
+        pointLight.position.x = camera.position.x;
+        pointLight.position.y = camera.position.y;
+        focus = true;
+
+      },
+      'unFocus': function() {
+        cameraTarget = {};
+        cameraTarget.position = new THREE.Vector3();
+        cameraTarget.rotation = new THREE.Vector3();
+        cameraTarget.position.copy(camera.position);
+        cameraTarget.position.y -= window.innerHeight/3;
+        cameraTarget.rotation = new THREE.Vector3(0.5,0,0);
+        focus = false;
+      }
     };
 
-    // hexagon
+    // add hexagon to scene
     function addHexagon(tile) {
       var hexagon = new THREE.ShapeGeometry(hexagonShape);
       var geometry = new THREE.ExtrudeGeometry(hexagonShape, {
@@ -107,119 +196,7 @@ jQuery(function($){
       scene.add(mesh);
     }
 
-    // transition step for animation
-    function transitionStep(current, target, step) {
-      var completed = true;
-      if (current < target - step) {
-        current += step;
-        completed = false;
-      } else if (current > target + step) {
-        current -= step;
-        completed = false;
-      } else {
-        current = target;
-      }
-      var result = {};
-      result.current = current;
-      result.completed = completed;
-      return result;
-    }
-
-    // object will contain public methods to interact with the grid
-    var object = {
-      render: function() {
-        requestAnimationFrame(object.render);
-
-        // animate camera to target if there is a target
-        if (cameraTarget !== null) {
-          var rotStep = 0.02;
-          var xStep = 20;
-          var yStep = 20;
-          var completedRot = transitionStep(camera.rotation.x,
-            cameraTarget.rotation.x, rotStep);
-          camera.rotation.x = completedRot.current;
-          var completedPosX = transitionStep(camera.position.x,
-            cameraTarget.position.x, xStep);
-          camera.position.x = completedPosX.current;
-          var completedPosY = transitionStep(camera.position.y,
-            cameraTarget.position.y, yStep);
-          camera.position.y = completedPosY.current;
-          if (completedRot.completed && completedPosX.completed &&
-            completedPosY.completed) {
-            cameraTarget = null;
-          }
-        }
-
-        renderer.render(scene, camera);
-      },
-      'focusTile': function(point) {
-        // get tile
-        var t = settings.map.tiles[point.x][point.y];
-        // zoom to tile mesh
-        cameraTarget = {};
-        cameraTarget.position = new THREE.Vector3();
-        cameraTarget.rotation = new THREE.Vector3();
-        cameraTarget.position.copy(t.mesh.position);
-        cameraTarget.rotation.copy(t.mesh.rotation);
-        cameraTarget.position.x += Math.floor(settings.tileSize/2);
-        cameraTarget.position.y += Math.floor(settings.tileSize/2);
-        pointLight.position.x = camera.position.x;
-        pointLight.position.y = camera.position.y;
-        focus = true;
-
-      },
-      'unFocus': function() {
-        cameraTarget = {};
-        cameraTarget.position = new THREE.Vector3();
-        cameraTarget.rotation = new THREE.Vector3();
-        cameraTarget.position.copy(camera.position);
-        cameraTarget.position.y -= window.innerHeight/3;
-        cameraTarget.rotation = new THREE.Vector3(0.5,0,0);
-        focus = false;
-      }
-    };
-
-    // element
-    var el = $(this);
-
-    // scene
-    var scene = new THREE.Scene();
-
-    // camera
-    var camera = new THREE.PerspectiveCamera(60,
-      window.innerWidth/(window.innerHeight-4), 0.1, 5000);
-    camera.position.z = 500;
-    camera.rotation.x = 0.5;
-
-    // renderer
-    var renderer = new THREE.WebGLRenderer({
-      antialiasing: true
-    });
-    renderer.setSize(window.innerWidth, window.innerHeight-4);
-    el.html(renderer.domElement);
-
-    // geo setup
-    for (var i = 0; i < settings.map.rows; i++) {
-      for (var j = 0; j < settings.map.cols; j++) {
-        addHexagon(settings.map.getTile(i, j));
-      }
-    }
-
-    // hemisphere light
-    var hemisphereLight = new THREE.HemisphereLight(0xffffff, 0.3);
-    scene.add(hemisphereLight);
-
-    // point light
-    var pointLight = new THREE.PointLight(0xffffff, 0.7);
-    pointLight.position = camera.position;
-    pointLight.rotation.y = Math.PI/2;
-    scene.add(pointLight);
-
-    // render scene
-    object.render();
-
     // find clicked tile
-    projector = new THREE.Projector();
     function mouseTile(e) {
       var vector = new THREE.Vector3((e.clientX / window.innerWidth)*2 - 1,
         -1*(e.clientY / window.innerHeight) * 2 + 1, 0.5);
