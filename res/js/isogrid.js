@@ -112,7 +112,8 @@ jQuery(function($){
         'water': material('res/img/water.png', true),
         'waterdark': material('res/img/water.png', false),
         'ground': material('res/img/ground.png', true),
-        'grounddark': material('res/img/ground.png', false)
+        'grounddark': material('res/img/ground.png', false),
+        'black' : material('res/img/black.png', true)
       };
 
       // tilegrid setup
