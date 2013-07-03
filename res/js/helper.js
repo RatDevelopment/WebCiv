@@ -17,20 +17,3 @@ function transitionStep(current, target, step) {
   result.completed = completed;
   return result;
 }
-
-// return a material
-function material(image) {
-  var t = new THREE.ImageUtils.loadTexture(image);
-  var m = new THREE.MeshLambertMaterial({
-    map: t,
-    overdraw: true
-  });
-  return m;
-}
-
-// materials
-var materials = {
-  'blank': material('res/img/blank.png'),
-  'water': material('res/img/water.png'),
-  'ground': material('res/img/ground.png')
-};

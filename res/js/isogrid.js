@@ -34,51 +34,80 @@ jQuery(function($){
     // tile focus
     var focus = false;
 
-    // ---- [ three.js setup ] ------------------------------------------------
     // element
     var el = $(this);
 
-    // scene
-    var scene = new THREE.Scene();
+    // materials
+    var materials;
 
-    // camera
-    var camera = new THREE.PerspectiveCamera(60,
-      window.innerWidth/(window.innerHeight-4), 0.1, 5000);
-    camera.position.z = 500;
-    camera.rotation.x = 0.5;
+    // three.js vars
+    var scene, renderer, camera, projector, hemisphereLight, pointLight;
 
-    // renderer
-    var renderer = new THREE.WebGLRenderer({
-      physicallyBasedShading: true
-    });
-    renderer.setSize(window.innerWidth, window.innerHeight-4);
-    el.html(renderer.domElement);
-
-    // used for finding what object is clicked
-    projector = new THREE.Projector();
-
-    // tilegrid setup
-    for (var i = 0; i < settings.map.rows; i++) {
-      for (var j = 0; j < settings.map.cols; j++) {
-        addHexagon(settings.map.tiles[i][j]);
+    // ---- [ loading shaders ] -----------------------------------------------
+    // shader variables
+    var vertexShader = null;
+    var fragmentShader = null;
+    // XHR shader loading
+    var shaderXhr = new XMLHttpRequest();
+    shaderXhr.open("GET", "res/shaders/vertexShader.fs", true);
+    shaderXhr.onload = function() {
+      vertexShader = this.responseText;
+      shadersLoaded();
+    };
+    shaderXhr.send(null);
+    shaderXhr = new XMLHttpRequest();
+    shaderXhr.open("GET", "res/shaders/fragmentShader.fs", true);
+    shaderXhr.onload = function() {
+      fragmentShader = this.responseText;
+      shadersLoaded();
+    };
+    shaderXhr.send(null);
+    // init if both shaders are loaded
+    function shadersLoaded() {
+      if (vertexShader !== null && fragmentShader !== null) {
+        init();
       }
     }
 
-    // hemisphere light
-    var hemisphereLight = new THREE.HemisphereLight(0xffffff, 0.3);
-    scene.add(hemisphereLight);
+    // ---- [ three.js init function ] ----------------------------------------
+    function init() {
+      // renderer
+      renderer = new THREE.WebGLRenderer();
+      renderer.physicallyBasedShading = true;
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      el.html(renderer.domElement);
 
-    // point light
-    var pointLight = new THREE.PointLight(0xffffff, 0.7);
-    pointLight.position = camera.position;
-    pointLight.rotation.y = Math.PI/2;
-    scene.add(pointLight);
+      // scene
+      scene = new THREE.Scene();
 
-    // render scene
-    render();
+      // camera
+      camera = new THREE.PerspectiveCamera(60,
+        window.innerWidth/(window.innerHeight-4), 0.1, 5000);
+      camera.position.z = 500;
+      camera.rotation.x = 0.5;
 
-    // ---- [ functions ] -----------------------------------------------------
-    // three.js render
+      // used for finding what object is clicked
+      projector = new THREE.Projector();
+
+      // load materials
+       materials = {
+        'blank': material('res/img/blank.png'),
+        'water': material('res/img/water.png'),
+        'ground': material('res/img/ground.png')
+      };
+
+      // tilegrid setup
+      for (var i = 0; i < settings.map.rows; i++) {
+        for (var j = 0; j < settings.map.cols; j++) {
+          addHexagon(settings.map.tiles[i][j]);
+        }
+      }
+
+      // render scene
+      render();
+    }
+
+    // ---- [ three.js render function ] --------------------------------------
     function render() {
       requestAnimationFrame(render);
 
@@ -105,6 +134,7 @@ jQuery(function($){
       renderer.render(scene, camera);
     }
 
+    // ---- [ functions ] -----------------------------------------------------
     // object will contain public methods to interact with the grid
     var object = {
       'focusTile': function(point) {
@@ -118,8 +148,6 @@ jQuery(function($){
         cameraTarget.rotation.copy(t.mesh.rotation);
         cameraTarget.position.x += Math.floor(settings.tileSize/2);
         cameraTarget.position.y += Math.floor(settings.tileSize/2);
-        pointLight.position.x = camera.position.x;
-        pointLight.position.y = camera.position.y;
         focus = true;
 
       },
@@ -196,6 +224,31 @@ jQuery(function($){
       scene.add(mesh);
     }
 
+    // return a material
+    function material(image) {
+      // texture
+      var texture = new THREE.ImageUtils.loadTexture(image,
+        new THREE.UVMapping(), function() {
+      });
+      texture.needsUpdate = true;
+      // uniforms
+      var uniforms = {
+        texture: {type: 't', value: texture},
+        texture2: {type: 't', value: texture}
+      };
+      // attributes
+      var attributes = {
+      };
+      // material
+      var result = new THREE.ShaderMaterial({
+        attributes: attributes,
+        uniforms: uniforms,
+        vertexShader: vertexShader,
+        fragmentShader: fragmentShader
+      });
+      return result;
+    }
+
     // find clicked tile
     function mouseTile(e) {
       var vector = new THREE.Vector3((e.clientX / window.innerWidth)*2 - 1,
@@ -249,9 +302,9 @@ jQuery(function($){
 
     // resize handler
     $(window).resize(function() {
-      camera.aspect = window.innerWidth/(window.innerHeight-4);
+      camera.aspect = window.innerWidth/(window.innerHeight);
       camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight-4);
+      renderer.setSize(window.innerWidth, window.innerHeight);
     });
 
     return object;
