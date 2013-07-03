@@ -169,7 +169,17 @@ jQuery(function($){
         cameraTarget.position.y -= window.innerHeight/3;
         cameraTarget.rotation = new THREE.Vector3(0.5,0,0);
         focus = false;
+      },
+      'switchActive': function(point) {
+        var tile = settings.map.tiles[point.x][point.y];
+      if (tile.active) {
+        tile.mesh.material = materials[tile.type+'dark'];
+        tile.active = false;
+      } else {
+        tile.mesh.material = materials[tile.type];
+        tile.active = true;
       }
+    }
     };
 
     // add hexagon to scene
@@ -239,16 +249,6 @@ jQuery(function($){
       scene.add(mesh);
     }
 
-    function switchActive(tile) {
-      if (tile.active) {
-        tile.mesh.material = materials[tile.type+'dark'];
-        tile.active = false;
-      } else {
-        tile.mesh.material = materials[tile.type];
-        tile.active = true;
-      }
-    }
-
     // return a material
     function material(image, intensity) {
       // texture
@@ -298,7 +298,7 @@ jQuery(function($){
         var tilePoint = intersects[0].object.tilePoint;
         var tile = settings.map.tiles[tilePoint.x][tilePoint.y];
         // do something with tile
-        switchActive(tile);
+        object.switchActive(tile);
         // if (!focus) {
         //   object.focusTile(tile);
         // } else {
