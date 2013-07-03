@@ -42,7 +42,7 @@ jQuery(function($){
     var numMaterialsLoaded = 0;
 
     // three.js vars
-    var scene, renderer, camera, projector, hemisphereLight, pointLight;
+    var scene, renderer, camera, projector;
 
     // ---- [ loading shaders ] -----------------------------------------------
     // shader variables
@@ -250,7 +250,7 @@ jQuery(function($){
 
     // render if all materials are loaded
     function materialsLoaded() {
-      if (numMaterialsLoaded == Object.keys(materials).length) {
+      if (numMaterialsLoaded === Object.keys(materials).length) {
         render();
       }
     }
