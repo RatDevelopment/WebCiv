@@ -15,9 +15,8 @@ void main() {
   vec3 normal = normalize(vNormal);
   vec3 lightDir = normalize(vViewPosition);
 
-  float dotProduct = max(dot(normal, lightDir), 0.0) + 0.2;
-
   if (intensity > 0.5) {
+    float dotProduct = max(dot(normal, lightDir), 0.0) + 0.2;
     gl_FragColor = vec4(mix(tColor2.rgb, tColor.rgb, intensity), 1) *
       dotProduct;
   } else {

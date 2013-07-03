@@ -103,8 +103,8 @@ jQuery(function($){
 
       // load materials
        materials = {
-        'water': material('res/img/water.png', 0.99),
-        'ground': material('res/img/ground.png', 0.99),
+        'water': material('res/img/water.png', 1.0),
+        'ground': material('res/img/ground.png', 1.0),
         'waterdark': material('res/img/water.png', 0.4),
         'grounddark': material('res/img/ground.png', 0.4)
       };
