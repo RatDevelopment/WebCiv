@@ -45,7 +45,7 @@ jQuery(function($){
     var blackTexture;
 
     // three.js vars
-    var scene, renderer, camera, projector;
+    var scene, renderer, camera, projector, pointLight;
 
     // ---- [ loading shaders ] -----------------------------------------------
     // shader variables
@@ -101,12 +101,18 @@ jQuery(function($){
       });
       blackTexture.needsUpdate = true;
 
+      // point light
+      var pointLight = new THREE.PointLight(0xffffff, 1.2);
+      pointLight.position = camera.position;
+      pointLight.rotation.y = Math.PI/2;
+      scene.add(pointLight);
+
       // load materials
        materials = {
-        'water': material('res/img/water.png', 1.0),
-        'ground': material('res/img/ground.png', 1.0),
-        'waterdark': material('res/img/water.png', 0.4),
-        'grounddark': material('res/img/ground.png', 0.4)
+        'water': material('res/img/water.png', true),
+        'waterdark': material('res/img/water.png', false),
+        'ground': material('res/img/ground.png', true),
+        'grounddark': material('res/img/ground.png', false)
       };
 
       // tilegrid setup
@@ -250,7 +256,7 @@ jQuery(function($){
     }
 
     // return a material
-    function material(image, intensity) {
+    function material(image, active) {
       // texture
       var texture = new THREE.ImageUtils.loadTexture(image,
         new THREE.UVMapping(), function() {
@@ -258,22 +264,29 @@ jQuery(function($){
           materialsLoaded();
       });
       texture.needsUpdate = true;
-      // uniforms
-      var uniforms = {
-        texture: {type: 't', value: texture},
-        black: {type: 't', value: blackTexture},
-        intensity: {type: 'f', value: intensity}
-      };
-      // attributes
-      var attributes = {
-      };
       // material
-      var result = new THREE.ShaderMaterial({
-        attributes: attributes,
-        uniforms: uniforms,
-        vertexShader: vertexShader,
-        fragmentShader: fragmentShader
-      });
+      var result;
+      if (active) {
+        result = new THREE.MeshLambertMaterial({
+          map: texture,
+          overdraw: true
+        });
+      } else {
+        // uniforms
+        var uniforms = {
+          texture: {type: 't', value: texture},
+          black: {type: 't', value: blackTexture}
+        };
+        // attributes
+        var attributes = {
+        };
+        result = new THREE.ShaderMaterial({
+          attributes: attributes,
+          uniforms: uniforms,
+          vertexShader: vertexShader,
+          fragmentShader: fragmentShader
+        });
+      }
       return result;
     }
 
