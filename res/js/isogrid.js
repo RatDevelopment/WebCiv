@@ -39,6 +39,7 @@ jQuery(function($){
 
     // materials
     var materials;
+    var numMaterialsLoaded = 0;
 
     // three.js vars
     var scene, renderer, camera, projector, hemisphereLight, pointLight;
@@ -102,9 +103,6 @@ jQuery(function($){
           addHexagon(settings.map.tiles[i][j]);
         }
       }
-
-      // render scene
-      render();
     }
 
     // ---- [ three.js render function ] --------------------------------------
@@ -229,6 +227,8 @@ jQuery(function($){
       // texture
       var texture = new THREE.ImageUtils.loadTexture(image,
         new THREE.UVMapping(), function() {
+          numMaterialsLoaded++;
+          materialsLoaded();
       });
       texture.needsUpdate = true;
       // uniforms
@@ -246,6 +246,13 @@ jQuery(function($){
         fragmentShader: fragmentShader
       });
       return result;
+    }
+
+    // render if all materials are loaded
+    function materialsLoaded() {
+      if (numMaterialsLoaded == Object.keys(materials).length) {
+        render();
+      }
     }
 
     // find clicked tile
