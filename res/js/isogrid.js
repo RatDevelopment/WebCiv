@@ -233,8 +233,7 @@ jQuery(function($){
       texture.needsUpdate = true;
       // uniforms
       var uniforms = {
-        texture: {type: 't', value: texture},
-        texture2: {type: 't', value: texture}
+        texture: {type: 't', value: texture}
       };
       // attributes
       var attributes = {
