@@ -41,6 +41,9 @@ jQuery(function($){
     var materials;
     var numMaterialsLoaded = 0;
 
+    // reusable textures
+    var blackTexture;
+
     // three.js vars
     var scene, renderer, camera, projector;
 
@@ -90,11 +93,20 @@ jQuery(function($){
       // used for finding what object is clicked
       projector = new THREE.Projector();
 
+      // black texture for darkening
+      blackTexture = new THREE.ImageUtils.loadTexture('res/img/black.png',
+        new THREE.UVMapping(), function() {
+          numMaterialsLoaded++;
+          materialsLoaded();
+      });
+      blackTexture.needsUpdate = true;
+
       // load materials
        materials = {
-        'blank': material('res/img/blank.png'),
-        'water': material('res/img/water.png'),
-        'ground': material('res/img/ground.png')
+        'water': material('res/img/water.png', 0.99),
+        'ground': material('res/img/ground.png', 0.99),
+        'waterdark': material('res/img/water.png', 0.4),
+        'grounddark': material('res/img/ground.png', 0.4)
       };
 
       // tilegrid setup
@@ -211,7 +223,12 @@ jQuery(function($){
         geometry.faceUvs[0].push(new THREE.Vector2(0,1));
       }
       // end uv mapping
-      var mesh = new THREE.Mesh(geometry, materials[tile.type]);
+      var mesh;
+      if (tile.active) {
+        mesh = new THREE.Mesh(geometry, materials[tile.type]);
+      } else {
+        mesh = new THREE.Mesh(geometry, materials[tile.type+'dark']);
+      }
       var xoffset = Math.abs(tile.y) % 2 === 1 ? settings.tileSize/2 : 0;
       mesh.position.x = tile.x*settings.tileSize + xoffset;
       mesh.position.y = tile.y*YSPACE;
@@ -222,8 +239,18 @@ jQuery(function($){
       scene.add(mesh);
     }
 
+    function switchActive(tile) {
+      if (tile.active) {
+        tile.mesh.material = materials[tile.type+'dark'];
+        tile.active = false;
+      } else {
+        tile.mesh.material = materials[tile.type];
+        tile.active = true;
+      }
+    }
+
     // return a material
-    function material(image) {
+    function material(image, intensity) {
       // texture
       var texture = new THREE.ImageUtils.loadTexture(image,
         new THREE.UVMapping(), function() {
@@ -233,7 +260,9 @@ jQuery(function($){
       texture.needsUpdate = true;
       // uniforms
       var uniforms = {
-        texture: {type: 't', value: texture}
+        texture: {type: 't', value: texture},
+        black: {type: 't', value: blackTexture},
+        intensity: {type: 'f', value: intensity}
       };
       // attributes
       var attributes = {
@@ -250,7 +279,7 @@ jQuery(function($){
 
     // render if all materials are loaded
     function materialsLoaded() {
-      if (numMaterialsLoaded === Object.keys(materials).length) {
+      if (numMaterialsLoaded === Object.keys(materials).length+1) {
         render();
       }
     }
@@ -269,11 +298,12 @@ jQuery(function($){
         var tilePoint = intersects[0].object.tilePoint;
         var tile = settings.map.tiles[tilePoint.x][tilePoint.y];
         // do something with tile
-        if (!focus) {
-          object.focusTile(tile);
-        } else {
-          object.unFocus();
-        }
+        switchActive(tile);
+        // if (!focus) {
+        //   object.focusTile(tile);
+        // } else {
+        //   object.unFocus();
+        // }
       }
     }
     el.click(mouseTile);
