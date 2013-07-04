@@ -55,7 +55,7 @@ jQuery(function($){
     var scene, renderer, camera, projector, pointLight;
 
     // transition frames
-    var transitionFrames = 120;
+    var transitionFrames = 60;
     var transitionFrameNum = transitionFrames;
 
     // ---- [ loading shaders ] -----------------------------------------------
