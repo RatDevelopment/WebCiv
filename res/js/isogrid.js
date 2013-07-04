@@ -31,6 +31,12 @@ jQuery(function($){
     // camera target
     var cameraTarget = null;
 
+    // camera limits
+    var cameraMinX = settings.tileSize;
+    var cameraMinY = -1*settings.tileSize;
+    var cameraMaxX = (settings.map.cols-1)*settings.tileSize;
+    var cameraMaxY = (settings.map.rows-3)*YSPACE;
+
     // tile focus
     var focus = false;
 
@@ -41,8 +47,12 @@ jQuery(function($){
     var materials;
     var numMaterialsLoaded = 0;
 
+    // radius of surrounding sphere
+    var sphereRadius = Math.max(settings.map.cols, settings.map.rows)*
+      settings.tileSize;
+
     // reusable textures
-    var blackTexture;
+    var blackTexture, blackMaterial;
 
     // three.js vars
     var scene, renderer, camera, projector, pointLight;
@@ -86,7 +96,7 @@ jQuery(function($){
 
       // camera
       camera = new THREE.PerspectiveCamera(60,
-        window.innerWidth/(window.innerHeight-4), 0.1, 5000);
+        window.innerWidth/(window.innerHeight-4), 0.1, sphereRadius*1.5);
       camera.position.z = 500;
       camera.rotation.x = 0.5;
 
@@ -112,8 +122,7 @@ jQuery(function($){
         'water': material('res/img/water.png', true),
         'waterdark': material('res/img/water.png', false),
         'ground': material('res/img/ground.png', true),
-        'grounddark': material('res/img/ground.png', false),
-        'black' : material('res/img/black.png', true)
+        'grounddark': material('res/img/ground.png', false)
       };
 
       // tilegrid setup
@@ -122,6 +131,16 @@ jQuery(function($){
           addHexagon(settings.map.tiles[i][j]);
         }
       }
+
+      // sky sphere
+      var sphere = new THREE.Mesh(new THREE.SphereGeometry(sphereRadius),
+        new THREE.MeshBasicMaterial({
+        color: 0x000000,
+        side: THREE.BackSide
+      }));
+      sphere.position.x = settings.map.cols*settings.tileSize/2;
+      sphere.position.y = settings.map.rows*settings.tileSize/2;
+      scene.add(sphere);
     }
 
     // ---- [ three.js render function ] --------------------------------------
@@ -293,7 +312,7 @@ jQuery(function($){
 
     // render if all materials are loaded
     function materialsLoaded() {
-      if (numMaterialsLoaded === Object.keys(materials).length+1) {
+      if (numMaterialsLoaded === Object.keys(materials).length) {
         render();
       }
     }
@@ -345,8 +364,20 @@ jQuery(function($){
         var mousey = e.pageY;
         var newx = mousedowncam.x - mousex + mousedownx;
         var newy = mousedowncam.y + mousey - mousedowny;
-        camera.position.x = newx;
-        camera.position.y = newy;
+        if (newx <= cameraMinX) {
+          camera.position.x = cameraMinX;
+        } else  if (newx >= cameraMaxX) {
+          camera.position.x = cameraMaxX;
+        } else {
+          camera.position.x = newx;
+        }
+        if (newy <= cameraMinY) {
+          camera.position.y = cameraMinY;
+        } else  if (newy >= cameraMaxY) {
+          camera.position.y = cameraMaxY;
+        } else {
+          camera.position.y = newy;
+        }
       }
     });
 

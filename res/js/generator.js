@@ -12,8 +12,7 @@ function tile(x, y, type, neighbors, elevation) {
     y: y,
     type: type,
     neighbors: neighbors,
-    elevation: elevation,
-    active: false
+    elevation: elevation
   };
 }
 
