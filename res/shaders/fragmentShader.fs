@@ -16,6 +16,6 @@ void main() {
 
   float dotProduct = max(dot(normal, lightDir), 0.0) + 0.5;
 
-  gl_FragColor = vec4(mix(tColor2.rgb, tColor.rgb, dotProduct*0.2), 1) * dotProduct;
+  gl_FragColor = vec4(mix(tColor2.rgb, tColor.rgb, dotProduct*0.2), 1.4) * dotProduct;
 
 }
