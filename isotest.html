@@ -14,8 +14,9 @@
     <div class="game" id="test"></div>
     <script>
       var map = getMap(50, 50);
+      var grid;
       jQuery(function($) {
-        $("#test").isogrid({
+        grid = $("#test").isogrid({
           map: map
         })
       });

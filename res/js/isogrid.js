@@ -32,10 +32,7 @@ jQuery(function($){
     var cameraTarget = null;
 
     // camera limits
-    var cameraMinX = settings.tileSize;
-    var cameraMinY = -1*settings.tileSize;
-    var cameraMaxX = (settings.map.cols-1)*settings.tileSize;
-    var cameraMaxY = (settings.map.rows-3)*YSPACE;
+    var cameraMinX, cameraMaxX, cameraMinY, cameraMaxY;
 
     // tile focus
     var focus = false;
@@ -56,6 +53,10 @@ jQuery(function($){
 
     // three.js vars
     var scene, renderer, camera, projector, pointLight;
+
+    // transition frames
+    var transitionFrames = 120;
+    var transitionFrameNum = transitionFrames;
 
     // ---- [ loading shaders ] -----------------------------------------------
     // shader variables
@@ -132,6 +133,13 @@ jQuery(function($){
         }
       }
 
+      cameraMinX = settings.map.tiles[0][0].mesh.position.x;
+      cameraMinY = settings.map.tiles[0][0].mesh.position.y;
+      cameraMaxX = settings.map.tiles[settings.map.cols-1][settings.map.rows-1]
+        .mesh.position.x;
+      cameraMaxY = settings.map.tiles[settings.map.cols-1][settings.map.rows-1]
+        .mesh.position.y;
+
       // sky sphere
       var sphere = new THREE.Mesh(new THREE.SphereGeometry(sphereRadius),
         new THREE.MeshBasicMaterial({
@@ -149,21 +157,34 @@ jQuery(function($){
 
       // animate camera to target if there is a target
       if (cameraTarget !== null) {
-        var rotStep = 0.02;
-        var xStep = 20;
-        var yStep = 20;
+        // ease
+        var ease = (transitionFrames - transitionFrameNum)/transitionFrames;
+        // no dividing by 0
+        if (transitionFrameNum === 0) {
+          transitionFramesNum = 1;
+        }
+        // steps
+        var rotStep = ease * Math.abs(camera.rotation.x -
+          cameraTarget.rotation.x)/transitionFrameNum;
+        var xStep = ease * Math.abs(camera.position.x -
+          cameraTarget.position.x)/transitionFrameNum;
+        var yStep = ease * Math.abs(camera.position.y -
+          cameraTarget.position.y)/transitionFrameNum;
         var completedRot = transitionStep(camera.rotation.x,
           cameraTarget.rotation.x, rotStep);
         camera.rotation.x = completedRot.current;
+        // apply
         var completedPosX = transitionStep(camera.position.x,
           cameraTarget.position.x, xStep);
         camera.position.x = completedPosX.current;
         var completedPosY = transitionStep(camera.position.y,
           cameraTarget.position.y, yStep);
         camera.position.y = completedPosY.current;
+        transitionFrameNum--;
         if (completedRot.completed && completedPosX.completed &&
           completedPosY.completed) {
           cameraTarget = null;
+          transitionFrameNum = transitionFrames;
         }
       }
 
@@ -193,8 +214,29 @@ jQuery(function($){
         cameraTarget.rotation = new THREE.Vector3();
         cameraTarget.position.copy(camera.position);
         cameraTarget.position.y -= window.innerHeight/3;
+        // make sure camre stays within camera bounds
+        if (cameraTarget.position.x < cameraMinX) {
+          cameraTarget.position.x = cameraMinX;
+        } else if (cameraTarget.position.x > cameraMaxX) {
+          cameraTarget.position.x = cameraMaxX;
+        }
+        if (cameraTarget.position.y < cameraMinY) {
+          cameraTarget.position.y = cameraMinY;
+        } else if (cameraTarget.position.y > cameraMaxY) {
+          cameraTarget.position.y = cameraMaxY;
+        }
         cameraTarget.rotation = new THREE.Vector3(0.5,0,0);
         focus = false;
+      },
+      'moveCamera': function(point) {
+        var tile = settings.map.tiles[point.x][point.y];
+        cameraTarget = {};
+        cameraTarget.position = new THREE.Vector3();
+        cameraTarget.rotation = new THREE.Vector3();
+        cameraTarget.position.x = tile.mesh.position.x;
+        cameraTarget.position.y = tile.mesh.position.y;
+        cameraTarget.position.z = camera.position.z;
+        cameraTarget.rotation.copy(camera.rotation);
       },
       'switchActive': function(point) {
         var tile = settings.map.tiles[point.x][point.y];
@@ -312,8 +354,10 @@ jQuery(function($){
 
     // render if all materials are loaded
     function materialsLoaded() {
-      if (numMaterialsLoaded === Object.keys(materials).length) {
+      if (numMaterialsLoaded === Object.keys(materials).length+1) {
         render();
+        var point = point2D(settings.map.cols/2, settings.map.rows/2);
+        object.moveCamera(point);
       }
     }
 
@@ -364,16 +408,16 @@ jQuery(function($){
         var mousey = e.pageY;
         var newx = mousedowncam.x - mousex + mousedownx;
         var newy = mousedowncam.y + mousey - mousedowny;
-        if (newx <= cameraMinX) {
+        if (newx < cameraMinX) {
           camera.position.x = cameraMinX;
-        } else  if (newx >= cameraMaxX) {
+        } else  if (newx > cameraMaxX) {
           camera.position.x = cameraMaxX;
         } else {
           camera.position.x = newx;
         }
-        if (newy <= cameraMinY) {
+        if (newy < cameraMinY) {
           camera.position.y = cameraMinY;
-        } else  if (newy >= cameraMaxY) {
+        } else  if (newy > cameraMaxY) {
           camera.position.y = cameraMaxY;
         } else {
           camera.position.y = newy;
