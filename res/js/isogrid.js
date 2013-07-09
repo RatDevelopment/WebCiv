@@ -1,6 +1,8 @@
+/* globals transitionStep, point2D */
+
 // $.fn.isogrid implementation
-jQuery(function($){
-  $.fn.isogrid = function(options) {
+$(function($) {
+  $.fn.isogrid = function (options) {
     // ---- [ settings ] ------------------------------------------------------
     var settings = {
       map: {},
@@ -49,10 +51,10 @@ jQuery(function($){
       settings.tileSize;
 
     // reusable textures
-    var blackTexture, blackMaterial;
+    var blackTexture;
 
     // three.js vars
-    var scene, renderer, camera, projector, pointLight;
+    var scene, renderer, camera, projector;
 
     // transition frames
     var transitionFrames = 60;
@@ -109,7 +111,7 @@ jQuery(function($){
         new THREE.UVMapping(), function() {
           numMaterialsLoaded++;
           materialsLoaded();
-      });
+        });
       blackTexture.needsUpdate = true;
 
       // point light
@@ -119,7 +121,7 @@ jQuery(function($){
       scene.add(pointLight);
 
       // load materials
-       materials = {
+      materials = {
         'water': material('res/img/water.png', true),
         'waterdark': material('res/img/water.png', false),
         'ground': material('res/img/ground.png', true),
@@ -161,7 +163,7 @@ jQuery(function($){
         var ease = (transitionFrames - transitionFrameNum)/transitionFrames;
         // no dividing by 0
         if (transitionFrameNum === 0) {
-          transitionFramesNum = 1;
+          transitionFrameNum = 1;
         }
         // steps
         var rotStep = ease * Math.abs(camera.rotation.x -
@@ -240,19 +242,18 @@ jQuery(function($){
       },
       'switchActive': function(point) {
         var tile = settings.map.tiles[point.x][point.y];
-      if (tile.active) {
-        tile.mesh.material = materials[tile.type+'dark'];
-        tile.active = false;
-      } else {
-        tile.mesh.material = materials[tile.type];
-        tile.active = true;
+        if (tile.active) {
+          tile.mesh.material = materials[tile.type+'dark'];
+          tile.active = false;
+        } else {
+          tile.mesh.material = materials[tile.type];
+          tile.active = true;
+        }
       }
-    }
     };
 
     // add hexagon to scene
     function addHexagon(tile) {
-      var hexagon = new THREE.ShapeGeometry(hexagonShape);
       var geometry = new THREE.ExtrudeGeometry(hexagonShape, {
         amount: tile.elevation,
         bevelEnabled: false
@@ -262,41 +263,41 @@ jQuery(function($){
       geometry.faceVertexUvs = [[]];
       for (var f = 0; f < geometry.faces.length; f++) {
         switch(f) {
-          case 4:
-            geometry.faceVertexUvs[0].push([
-              new THREE.Vector2(0, 0.75),
-              new THREE.Vector2(0, 0.25),
-              new THREE.Vector2(0.5, 0)
-            ]);
-            break;
-          case 5:
-            geometry.faceVertexUvs[0].push([
-              new THREE.Vector2(0.5, 0),
-              new THREE.Vector2(1, 0.25),
-              new THREE.Vector2(1, 0.75)
-            ]);
-            break;
-          case 6:
-            geometry.faceVertexUvs[0].push([
-              new THREE.Vector2(1, 0.75),
-              new THREE.Vector2(0.5, 1),
-              new THREE.Vector2(0, 0.75)
-            ]);
-            break;
-          case 7:
-            geometry.faceVertexUvs[0].push([
-              new THREE.Vector2(0, 0.75),
-              new THREE.Vector2(0.5, 0),
-              new THREE.Vector2(1, 0.75)
-            ]);
-            break;
-          default:
-            geometry.faceVertexUvs[0].push([
+        case 4:
+          geometry.faceVertexUvs[0].push([
+            new THREE.Vector2(0, 0.75),
+            new THREE.Vector2(0, 0.25),
+            new THREE.Vector2(0.5, 0)
+          ]);
+          break;
+        case 5:
+          geometry.faceVertexUvs[0].push([
+            new THREE.Vector2(0.5, 0),
+            new THREE.Vector2(1, 0.25),
+            new THREE.Vector2(1, 0.75)
+          ]);
+          break;
+        case 6:
+          geometry.faceVertexUvs[0].push([
+            new THREE.Vector2(1, 0.75),
+            new THREE.Vector2(0.5, 1),
+            new THREE.Vector2(0, 0.75)
+          ]);
+          break;
+        case 7:
+          geometry.faceVertexUvs[0].push([
+            new THREE.Vector2(0, 0.75),
+            new THREE.Vector2(0.5, 0),
+            new THREE.Vector2(1, 0.75)
+          ]);
+          break;
+        default:
+          geometry.faceVertexUvs[0].push([
             new THREE.Vector2(0, 0.25),
             new THREE.Vector2(1, 0.25),
             new THREE.Vector2(1, 0),
             new THREE.Vector2(0, 0)
-        ]);
+          ]);
         }
         geometry.faceUvs[0].push(new THREE.Vector2(0,1));
       }
@@ -324,7 +325,7 @@ jQuery(function($){
         new THREE.UVMapping(), function() {
           numMaterialsLoaded++;
           materialsLoaded();
-      });
+        });
       texture.needsUpdate = true;
       // material
       var result;
