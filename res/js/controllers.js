@@ -34,7 +34,7 @@ controllers.WCController = function ($scope, socket) {
     $('#chatWindow').scrollTop($('#chatWindow').prop('scrollHeight'));
   });
 
-  socket.on('messages:clear', function(data) {
+  socket.on('messages:clear', function() {
     $scope.messages = [];
     $scope.lobbyName = $.localStorage('lobby');
   });

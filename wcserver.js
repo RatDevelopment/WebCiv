@@ -87,11 +87,11 @@ function getLobbyNames() {
 }
 
 function wclog(message) {
-  console.log('---' + message + '---');
+  console.log('--- ' + message + ' ---');
 }
 
 function wcerror(message, error) {
-  console.log('***' + message + '***');
+  console.log('*** ' + message + ' ***');
   console.log(error);
 }
 
@@ -190,7 +190,7 @@ io.sockets.on('connection', function (socket) {
   socket.on('name:chosen', function (data) {
     try {
       var name = data.name;
-     wclog(name + ' has connected');
+      wclog(name + ' has connected');
       var user = new User({
         name: name,
         id: socket.id
