@@ -168,6 +168,9 @@ function joinLobby(socket, data) {
             lobby: lobbyName,
             message: name + ' has joined ' + lobbyName + '.'
           });
+          socket.emit('lobby:join', {
+            lobbyName: lobbyName
+          });
           broadcastLobbies();
         });
       } else {

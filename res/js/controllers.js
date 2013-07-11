@@ -24,6 +24,7 @@ controllers.WCController = function ($scope, socket) {
 
   socket.on('lobby:join', function(data) {
     var lobbyName = data.lobbyName;
+    $scope.lobbyName = data.lobbyName;
     $.localStorage('lobby', lobbyName);
     $scope.mainview = 'lobby';
   });
@@ -120,8 +121,6 @@ controllers.WCController = function ($scope, socket) {
   };
 
   $scope.lobbyJoin = function(lobbyName) {
-    $.localStorage('lobby', lobbyName);
-    $scope.mainview = 'lobby';
     socket.emit('lobby:join', {
       lobbyName: lobbyName
     });
