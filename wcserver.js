@@ -5,10 +5,12 @@ var routes = require('./routes');
 
 var app = express();
 var server = http.createServer(app);
-var io = require('socket.io').listen(server);
+var io = require('socket.io').listen(server, {log: false});
 mongoose.connect('mongodb://127.0.0.1/db');
 
 server.listen(1337);
+
+console.log("---WEBCIV SERVER STARTED---");
 
 // ---- [ mongoose schemas ] --------------------------------------------------
 var userSchema = mongoose.Schema({
@@ -22,8 +24,23 @@ userSchema.statics.findByID = function(id, callback) {
   this.findOne({id: new RegExp(id, 'i')}, callback);
 };
 
+var lobbySchema = mongoose.Schema({
+  name: String,
+  maxPlayers: Number
+});
+lobbySchema.statics.findByName = function(name, callback) {
+  this.findOne({name: new RegExp(name, 'i')}, callback);
+};
+lobbySchema.statics.removeByName = function(name, callback) {
+  this.findOne({name: new RegExp(name, 'i')}, callback).remove();
+};
+lobbySchema.statics.findAll = function(callback) {
+  this.find({}, callback);
+};
+
 // ---- [ mongoose models ] ---------------------------------------------------
 var User = mongoose.model('User', userSchema);
+var Lobby = mongoose.model('Lobby', lobbySchema);
 
 // ---- [ jade ] ---------------------------------------------------
 app.configure(function(){
@@ -45,31 +62,87 @@ app.get('/partials/:name', routes.partials);
 // redirect all others to the index (HTML5 history)
 app.get('*', routes.index);
 
-// ---- [ socket functions ] --------------------------------------------------
-// sends message to lobby
-// data must have data.lobby and data.message
-function lobbyMessage(socket, data) {
-  var lobby = data.lobby;
-  var message = data.message;
-  io.sockets['in'](lobby).emit('message', {
-    lobby: lobby,
-    message: message
-  });
-}
-
-// emits all lobbies
-// should be called when there is a possible change in lobbies
-function broadcastLobbies() {
+// ---- [ helper functions ] --------------------------------------------------
+// gets list of lobby names in socket rooms
+function getLobbyNames() {
   var lobbies = [];
   for (var key in io.sockets.manager.rooms) {
     if (key.length > 0) {
-      var lobby = {};
-      lobby.name = key.substring(1, key.length);
-      lobbies.push(lobby);
+      lobbies.push(key.substring(1, key.length));
     }
   }
-  io.sockets.emit('lobby:list', {
-    lobbies: lobbies
+  return lobbies;
+}
+
+function lobbyExists(lobbyName) {
+  var lobbyNames = getLobbyNames();
+  var result = lobbyNames.indexOf(lobbyName) !== -1;
+  return result;
+}
+
+function wclog(message) {
+  console.log('--- ' + message + ' ---');
+}
+
+function wcerror(message, error) {
+  console.log('*** ' + message + ' ***');
+  console.log(error);
+}
+
+// ---- [ socket functions ] --------------------------------------------------
+// sends message to lobby
+// data must have data.lobbyName, data.message, and data.name
+function lobbyMessage(socket, data) {
+  try {
+    var lobbyName = data.lobbyName;
+    var message = data.message;
+    var name = data.name;
+    io.sockets['in'](lobbyName).emit('message', {
+      lobbyName: lobbyName,
+      message: message,
+      name: name
+    });
+  } catch(err) {
+    wcerror('lobby message error', err);
+  }
+}
+
+// broadcasts all lobbies to all users
+// should be called when there is a possible change in lobbies
+function broadcastLobbies() {
+  wclog('broadcasting lobbies');
+  Lobby.findAll(function(err, lobbies) {
+    var result = [];
+    var lobbyNames = getLobbyNames();
+    for (var i in lobbies) {
+      if (lobbyNames.indexOf(lobbies[i].name) === -1) {
+        Lobby.removeByName(lobbies[i].name);
+      } else {
+        var usersConnected = io.sockets.clients(lobbies[i].name).length;
+        var lobby = JSON.parse(JSON.stringify(lobbies[i]));
+        lobby.usersConnected = usersConnected;
+        result.push(lobby);
+      }
+      io.sockets.emit('lobby:list', {
+        lobbies: result
+      });
+    }
+  });
+}
+
+// emits lobbies to single user
+function emitLobbies(socket) {
+  var result = [];
+  Lobby.findAll(function(err, lobbies) {
+    for (var i in lobbies) {
+      var usersConnected = io.sockets.clients(lobbies[i].name).length;
+      var lobby = JSON.parse(JSON.stringify(lobbies[i]));
+      lobby.usersConnected = usersConnected;
+      result.push(lobby);
+    }
+    socket.emit('lobby:list', {
+      lobbies: result
+    });
   });
 }
 
@@ -78,39 +151,62 @@ function clearMessages(socket) {
   socket.emit('messages:clear');
 }
 
+function userErrorMessage(socket, message) {
+  socket.emit('error', {
+    message: message
+  });
+}
+
 // joins socket lobby
-// data must have data.lobby
+// data must have data.lobbyName
 function joinLobby(socket, data) {
-  if (data !== null) {
-    var lobby = data.lobby;
-    socket.join(lobby);
-    User.findByID(socket.id, function(err, data) {
-      var name = data.name;
-      clearMessages(socket);
-      lobbyMessage(socket, {
-        lobby: lobby,
-        message: name + ' has joined ' + lobby + '.'
-      });
-      broadcastLobbies();
+  try {
+    var lobbyName = data.lobbyName;
+    var usersConnected = io.sockets.clients(lobbyName).length;
+    Lobby.findByName(lobbyName, function(err, lobby) {
+      var maxPlayers = lobby.maxPlayers;
+      if (usersConnected < maxPlayers) {
+        socket.join(lobbyName);
+        User.findByID(socket.id, function(err, user) {
+          var name = user.name;
+          wclog(name + " joined " +  lobbyName);
+          clearMessages(socket);
+          lobbyMessage(socket, {
+            lobby: lobbyName,
+            message: name + ' has joined ' + lobbyName + '.'
+          });
+          socket.emit('lobby:join', {
+            lobbyName: lobbyName
+          });
+          broadcastLobbies();
+        });
+      } else {
+        userErrorMessage(socket, 'This lobby is full.');
+      }
     });
+  } catch(err) {
+    wcerror('lobby join error', err);
   }
 }
 
-// leave socket lobby
-// data must have data.lobby
+// leave socket lobbyName
+// data must have data.lobbyName
 function leaveLobby(socket, data) {
-  if (data !== null) {
-    var lobby = data.lobby;
+  try {
+    var lobbyName = data.lobbyName;
     User.findByID(socket.id, function(err, data) {
       var name = data.name;
+      wclog(name + ' left ' +  lobbyName);
       lobbyMessage(socket, {
-        lobby: lobby,
-        message: name + ' has left ' + lobby + '.'
+        lobbyName: lobbyName,
+        message: name + ' has left ' + lobbyName + '.'
       });
       clearMessages(socket);
-      socket.leave(lobby);
+      socket.leave(lobbyName);
       broadcastLobbies();
     });
+  } catch(err) {
+    wcerror('lobby leave error', err);
   }
 }
 
@@ -118,29 +214,55 @@ function leaveLobby(socket, data) {
 io.sockets.on('connection', function (socket) {
   // name is chosen for user
   socket.on('name:chosen', function (data) {
-    var user = new User({
-      name: data.name,
-      id: socket.id
-    });
-    user.save();
-    broadcastLobbies();
+    try {
+      var name = data.name;
+      wclog(name + ' has connected');
+      var user = new User({
+        name: name,
+        id: socket.id
+      });
+      user.save();
+      emitLobbies(socket);
+    } catch(err) {
+      wcerror('name choose error', err);
+    }
   });
 
   // new lobby is made by user
   socket.on('lobby:new', function(data) {
-    User.findByID(socket.id, function(err, data) {
-      var lobbyName = data.name + '\'s lobby';
-      joinLobby(socket, {lobby: lobbyName});
-      socket.emit('lobby:join', {
-        lobby: lobbyName
-      });
-      broadcastLobbies();
-    });
+    try {
+      var lobbyName = data.lobbyName;
+      if (!lobbyExists(lobbyName)) {
+        var maxPlayers = data.maxPlayers;
+        var lobby = new Lobby({
+          name: lobbyName,
+          maxPlayers: maxPlayers
+        });
+        lobby.save(function() {
+          User.findByID(socket.id, function(err, data) {
+            var name = data.name;
+            wclog(name + " created " + lobbyName);
+            joinLobby(socket, {
+              lobbyName: lobbyName,
+              name: name
+            });
+            socket.emit('lobby:join', {
+              lobbyName: lobbyName
+            });
+            broadcastLobbies();
+          });
+        });
+      } else {
+        userErrorMessage(socket, 'Lobby Already Exists');
+      }
+    } catch(err) {
+      wcerror('new lobby error', err);
+    }
   });
 
   // user disconnects
   socket.on('disconnect', function() {
-    function disc(err, data) {
+    function lobbyDisc(err, data) {
       var message = '';
       if (data === null) {
         message = 'An unnamed player has diconnected.';
@@ -149,9 +271,19 @@ io.sockets.on('connection', function (socket) {
         message = data.name + ' has disconnected.';
       }
       lobbyMessage(socket, {
-        lobby: lobbyName,
+        lobbyName: lobbyName,
         message: message
       });
+      broadcastLobbies();
+    }
+    function disc(err, data) {
+      if (data === null) {
+        wclog('an unnamed player has disconnected');
+      }
+      else {
+        wclog(data.name + ' has disconnected');
+      }
+      User.removeByID(socket.id);
     }
     // find user name in mongo based on socket.id
     var lobbies = socket.manager.roomClients[socket.id];
@@ -159,11 +291,11 @@ io.sockets.on('connection', function (socket) {
       var lobbyName = lobby;
       if (lobby.length > 0) {
         lobbyName = lobby.substring(1, lobby.length);
+        User.findByID(socket.id, lobbyDisc);
+      } else {
         User.findByID(socket.id, disc);
       }
     }
-    User.removeByID(socket.id);
-    broadcastLobbies();
   });
 
   // when user joins a lobby
@@ -174,6 +306,13 @@ io.sockets.on('connection', function (socket) {
   // when user leaves a lobby
   socket.on('lobby:leave', function(data) {
     leaveLobby(socket, data);
+  });
+
+  // check whether lobby exists
+  socket.on('lobby:checkName', function(data) {
+    socket.emit('lobby:checkName', {
+      lobbyExists: lobbyExists(data.lobbyName)
+    });
   });
 
   //when user sends a message to a lobby

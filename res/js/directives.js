@@ -1,5 +1,5 @@
 angular.module('wc.directives', [], function($compileProvider) {
-  $compileProvider.directive('view', function($compile) {
+  $compileProvider.directive('view', function($compile, $http) {
     return function(scope, element, attrs) {
       scope.$watch(
         function(scope) {
@@ -8,14 +8,14 @@ angular.module('wc.directives', [], function($compileProvider) {
         },
         function(value) {
           // when the 'view' expression changes
-          $.ajax({
-            url: '/partials/' + value,
-            success: function(data) {
+          if (value !== null) {
+            $http.get('/partials/' + value).success(function(data) {
               element.html(data);
               $compile(element.contents())(scope);
-              scope.$apply();
-            }
-          });
+            });
+          } else {
+            element.html('');
+          }
         }
       );
     };

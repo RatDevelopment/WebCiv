@@ -1,4 +1,17 @@
+body {
+  font-family: sans-serif;
+  background-color: #e7e7e7;
+  padding: 0;
+  margin: 0;
+}
+
+html {
+  min-height: 100%;
+  position: relative;
+}
+
 .chatWindow {
+  background-color: #ffffff;
   height: 240px;
   width: 60%;
   overflow-y: auto;
@@ -13,9 +26,39 @@
 }
 
 .messageField {
-  width: 50%;
+  width: 60%;
 }
 
 .hidden {
   display: none;
+}
+
+.error {
+  color: #ff0000;
+}
+
+.modal {
+  background-color: #ffffff;
+  -moz-box-shadow: 0 0 5px #474747;
+  -webkit-box-shadow: 0 0 5px #474747;
+  box-shadow: 1px 1px 5px 2px #474747;
+  margin-left: -200px;
+  position: fixed;
+  top: 20%;
+  left: 50%;
+  width: 400px;
+  display: none;
+}
+
+.modalContent {
+  padding: 5px;
+}
+
+.wccontent {
+  padding: 5px;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
 }

@@ -3,30 +3,53 @@ var controllers = {};
 controllers.WCController = function ($scope, socket) {
   // ---- [ scope vars init ] -------------------------------------------------
   $scope.lobbies = [];
-  $scope.messages = [];
-  $scope.lobby = '';
+  $scope.lobbyName = '';
+  $scope.username = '';
+
+  // views
   $scope.mainview = 'login';
+  $scope.modal = null;
+
+  // new lobby form
+  $scope.newLobby = {};
+
+  // lobby
+  $scope.lobby = {};
+  $scope.messages = [];
 
   // ---- [ socket functions ] ------------------------------------------------
   socket.on('lobby:list', function (data) {
     $scope.lobbies = data.lobbies;
+    for (var i in $scope.lobbies) {
+      $scope.lobbies[i].show =
+        $scope.lobbies[i].usersConnected < $scope.lobbies[i].maxPlayers;
+    }
   });
 
   socket.on('lobby:join', function(data) {
-    var lobby = data.lobby;
-    $.localStorage('lobby', lobby);
+    var lobbyName = data.lobbyName;
+    $scope.lobbyName = data.lobbyName;
+    $.localStorage('lobby', lobbyName);
     $scope.mainview = 'lobby';
+  });
+  
+  socket.on('lobby:checkName', function(data) {
+    $scope.newLobby.lobbyExists = data.lobbyExists;
   });
 
   socket.on('message', function (data) {
-    $scope.messages.push(data.message);
+    $scope.messages.push(data);
   }, function() {
     $('#chatWindow').scrollTop($('#chatWindow').prop('scrollHeight'));
   });
 
-  socket.on('messages:clear', function(data) {
+  socket.on('messages:clear', function() {
     $scope.messages = [];
-    $scope.lobby = $.localStorage('lobby');
+    $scope.lobbyName = $.localStorage('lobby');
+  });
+
+  socket.on('error', function(data) {
+    alert(data.message);
   });
 
   // ---- [ scope functions ] -------------------------------------------------
@@ -37,60 +60,96 @@ controllers.WCController = function ($scope, socket) {
     }
   };
 
+  $scope.contentClicked = function($event) {
+    // make modal popup go away
+    if ($scope.modal !== null && $event.target.nodeName !== 'BUTTON') {
+      $('#modal').fadeOut(100, function() {
+        $scope.modal = null;
+      });
+      $('#wccontent').fadeTo(100, 1);
+    }
+  };
+
   $scope.submitName = function(name) {
+    // display lobby list
     $scope.mainview = 'lobbylist';
     socket.emit('name:chosen', {
       name: name
     });
     $.localStorage('lobby', '');
     $.localStorage('username', name);
+    $scope.username = name;
+    $scope.newLobby.lobbyName = $scope.username + "'s lobby";
+    $scope.newLobby.maxPlayers = 8;
     return false;
   };
 
-  $scope.sendMessage = function() {
+  $scope.sendMessage = function(message) {
     var name = $.localStorage('username');
-    var lobby = getLobby();
-    var message = $('#messageField').val();
-
+    var lobbyName = getLobbyName();
     if (message) {
       socket.emit('message', {
         name: name,
-        lobby: lobby,
-        message: name + ': ' + message
+        lobbyName: lobbyName,
+        message: message
       });
-      $('#messageField').val('');
+      $scope.lobby.messageField = '';
     }
     return false;
   };
 
-  $scope.newLobby = function() {
-      socket.emit('lobby:new', {});
+  $scope.openModal = function(partial) {
+    $scope.modal = partial;
+    $('#modal').fadeIn(100);
+    $('#wccontent').fadeTo(100, 0.5);
+    if (partial === 'newlobby') {
+      $scope.checkLobbyName($scope.newLobby.lobbyName);
+    }
+  };
+
+  $scope.closeModal = function() {
+    $scope.modal = null;
+    $('#modal').fadeOut(100);
+    $('#wccontent').fadeTo(100, 1);
+  };
+
+  $scope.lobbyNew = function(lobbySettings) {
+    socket.emit('lobby:new', {
+      lobbyName: lobbySettings.lobbyName,
+      maxPlayers: lobbySettings.maxPlayers
+    });
+    $scope.closeModal();
+    return false;
   };
 
   $scope.lobbyLeave = function() {
-    var lobby = $.localStorage('lobby');
+    var lobbyName = $.localStorage('lobby');
     $.localStorage('lobby', '');
-    $scope.mainview = 'lobbylist';
     socket.emit('lobby:leave', {
-      lobby: lobby
+      lobbyName: lobbyName
     });
+    $scope.mainview = 'lobbylist';
   };
 
-  $scope.lobbyJoin = function(lobby) {
-    $.localStorage('lobby', lobby);
-    $scope.mainview = 'lobby';
+  $scope.lobbyJoin = function(lobbyName) {
     socket.emit('lobby:join', {
-      lobby: lobby
+      lobbyName: lobbyName
+    });
+  };
+  
+  $scope.checkLobbyName = function(lobbyName) {
+    socket.emit('lobby:checkName', {
+      lobbyName: lobbyName
     });
   };
 
   // --- [ helpder functions ] ------------------------------------------------
-  var getLobby = function() {
-    var lobby = $.localStorage('lobby');
-    if (!lobby) {
-      lobby = '';
+  var getLobbyName = function() {
+    var lobbyName = $.localStorage('lobby');
+    if (!lobbyName) {
+      lobbyName = '';
     }
-    return lobby;
+    return lobbyName;
   };
 };
 

@@ -1,9 +1,12 @@
-h1 {{ lobby }}
-#chatWindow.chatWindow.plainBorder
-  div(ng-repeat='message in messages') {{ message }}
-form#messageForm(ng-submit='sendMessage()')
-  | Send a message:&nbsp;
-  input#messageField.messageField(type='text', ng-model='messageField')
+h1 {{ lobbyName }}
+div#chatWindow.chatWindow.plainBorder
+  div(ng-repeat='message in messages')
+    span(ng-show='message.name')
+      strong {{ message.name }}
+      | :
+    |  {{ message.message }}
+form#messageForm(ng-submit='sendMessage(lobby.messageField)')
+  input#messageField.messageField(type='text', ng-model='lobby.messageField')
   input#messageSubmit(type='submit', value='Send')
 button(ng-click="lobbyLeave()")
-  | Leave Room
+  | Leave Lobby

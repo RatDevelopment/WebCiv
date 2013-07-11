@@ -4,7 +4,7 @@ angular.module('wc.services', []).
     return {
       on: function (eventName, callback, callback2) {
         socket.on(eventName, function () {
-        var args = arguments;
+          var args = arguments;
           $rootScope.$apply(function () {
             callback.apply(socket, args);
           });
