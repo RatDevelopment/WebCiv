@@ -1,6 +1,8 @@
 div.modalContent
   h1 Test
-  form(ng-submit='lobbyNew(newLobby.lobbyName)')
+  form(ng-submit='lobbyNew(newLobby)')
     p Lobby Name:
       input(type='text', ng-model='newLobby.lobbyName')
+    p Max Players:
+      input(type='text', ng-model='newLobby.maxPlayers')
     input(type='submit', value='Create Lobby')

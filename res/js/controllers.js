@@ -38,6 +38,10 @@ controllers.WCController = function ($scope, socket) {
     $scope.messages = [];
     $scope.lobbyName = $.localStorage('lobby');
   });
+  
+  socket.on('error', function(data) {
+    alert(data.message);
+  });
 
   // ---- [ scope functions ] -------------------------------------------------
   $scope.init = function() {
@@ -58,6 +62,7 @@ controllers.WCController = function ($scope, socket) {
   };
 
   $scope.submitName = function(name) {
+    // display lobby list
     $scope.mainview = 'lobbylist';
     socket.emit('name:chosen', {
       name: name
@@ -66,6 +71,7 @@ controllers.WCController = function ($scope, socket) {
     $.localStorage('username', name);
     $scope.username = name;
     $scope.newLobby.lobbyName = $scope.username + "'s lobby";
+    $scope.newLobby.maxPlayers = 8;
     return false;
   };
 
@@ -95,9 +101,10 @@ controllers.WCController = function ($scope, socket) {
     $('#wccontent').fadeTo(100, 1);
   };
 
-  $scope.lobbyNew = function(lobbyName) {
+  $scope.lobbyNew = function(lobbySettings) {
     socket.emit('lobby:new', {
-      lobbyName: lobbyName
+      lobbyName: lobbySettings.lobbyName,
+      maxPlayers: lobbySettings.maxPlayers
     });
     $scope.closeModal();
     return false;

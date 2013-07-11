@@ -26,7 +26,7 @@ userSchema.statics.findByID = function(id, callback) {
 
 var lobbySchema = mongoose.Schema({
   name: String,
-  limit: Number
+  maxPlayers: Number
 });
 lobbySchema.statics.findByName = function(name, callback) {
   this.findOne({name: new RegExp(name, 'i')}, callback);
@@ -142,21 +142,35 @@ function clearMessages(socket) {
   socket.emit('messages:clear');
 }
 
+function userErrorMessage(socket, message) {
+  socket.emit('error', {
+    message: message
+  });
+}
+
 // joins socket lobby
 // data must have data.lobbyName
 function joinLobby(socket, data) {
   try {
     var lobbyName = data.lobbyName;
-    socket.join(lobbyName);
-    User.findByID(socket.id, function(err, data) {
-      var name = data.name;
-      wclog(name + " joined " +  lobbyName);
-      clearMessages(socket);
-      lobbyMessage(socket, {
-        lobby: lobbyName,
-        message: name + ' has joined ' + lobbyName + '.'
-      });
-      broadcastLobbies();
+    var usersConnected = io.sockets.clients(lobbyName).length;
+    Lobby.findByName(lobbyName, function(err, lobby) {
+      var maxPlayers = lobby.maxPlayers;
+      if (usersConnected < maxPlayers) {
+        socket.join(lobbyName);
+        User.findByID(socket.id, function(err, user) {
+          var name = user.name;
+          wclog(name + " joined " +  lobbyName);
+          clearMessages(socket);
+          lobbyMessage(socket, {
+            lobby: lobbyName,
+            message: name + ' has joined ' + lobbyName + '.'
+          });
+          broadcastLobbies();
+        });
+      } else {
+        userErrorMessage(socket, 'This lobby is full.');
+      }
     });
   } catch(err) {
     wcerror('lobby join error', err);
@@ -206,9 +220,10 @@ io.sockets.on('connection', function (socket) {
   socket.on('lobby:new', function(data) {
     try {
       var lobbyName = data.lobbyName;
+      var maxPlayers = data.maxPlayers;
       var lobby = new Lobby({
         name: lobbyName,
-        limit: 8
+        maxPlayers: maxPlayers
       });
       lobby.save();
       User.findByID(socket.id, function(err, data) {
