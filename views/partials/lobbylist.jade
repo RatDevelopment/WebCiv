@@ -4,6 +4,7 @@
   p
     button(ng-click='openModal("newlobby")') New Lobby
   p(ng-repeat='lobby in lobbies')
-    | {{ lobby.name }} ({{ lobby.usersConnected }}/{{ lobby.maxPlayers}}) -
-    button.lobbyJoin(ng-click='lobbyJoin(lobby.name)')
-      | Join
+    | {{ lobby.name }} ({{ lobby.usersConnected }}/{{ lobby.maxPlayers}})
+    span(ng-show='lobby.show')  -
+      button.lobbyJoin(ng-click='lobbyJoin(lobby.name)')
+        | Join

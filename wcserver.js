@@ -107,8 +107,9 @@ function broadcastLobbies() {
   wclog('broadcasting lobbies');
   Lobby.findAll(function(err, lobbies) {
     var result = [];
+    var lobbyNames = getLobbyNames();
     for (var i in lobbies) {
-      if (getLobbyNames().indexOf(lobbies[i].name) === -1) {
+      if (lobbyNames.indexOf(lobbies[i].name) === -1) {
         Lobby.removeByName(lobbies[i].name);
       } else {
         var usersConnected = io.sockets.clients(lobbies[i].name).length;
