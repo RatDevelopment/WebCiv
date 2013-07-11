@@ -74,6 +74,12 @@ function getLobbyNames() {
   return lobbies;
 }
 
+function lobbyExists(lobbyName) {
+  var lobbyNames = getLobbyNames();
+  var result = lobbyNames.indexOf(lobbyName) !== -1;
+  return result;
+}
+
 function wclog(message) {
   console.log('--- ' + message + ' ---');
 }
@@ -226,25 +232,29 @@ io.sockets.on('connection', function (socket) {
   socket.on('lobby:new', function(data) {
     try {
       var lobbyName = data.lobbyName;
-      var maxPlayers = data.maxPlayers;
-      var lobby = new Lobby({
-        name: lobbyName,
-        maxPlayers: maxPlayers
-      });
-      lobby.save(function() {
-        User.findByID(socket.id, function(err, data) {
-          var name = data.name;
-          wclog(name + " created " + lobbyName);
-          joinLobby(socket, {
-            lobbyName: lobbyName,
-            name: name
-          });
-          socket.emit('lobby:join', {
-            lobbyName: lobbyName
-          });
-          broadcastLobbies();
+      if (!lobbyExists(lobbyName)) {
+        var maxPlayers = data.maxPlayers;
+        var lobby = new Lobby({
+          name: lobbyName,
+          maxPlayers: maxPlayers
         });
-      });
+        lobby.save(function() {
+          User.findByID(socket.id, function(err, data) {
+            var name = data.name;
+            wclog(name + " created " + lobbyName);
+            joinLobby(socket, {
+              lobbyName: lobbyName,
+              name: name
+            });
+            socket.emit('lobby:join', {
+              lobbyName: lobbyName
+            });
+            broadcastLobbies();
+          });
+        });
+      } else {
+        userErrorMessage(socket, 'Lobby Already Exists');
+      }
     } catch(err) {
       wcerror('new lobby error', err);
     }
@@ -296,6 +306,13 @@ io.sockets.on('connection', function (socket) {
   // when user leaves a lobby
   socket.on('lobby:leave', function(data) {
     leaveLobby(socket, data);
+  });
+
+  // check whether lobby exists
+  socket.on('lobby:checkName', function(data) {
+    socket.emit('lobby:checkName', {
+      lobbyExists: lobbyExists(data.lobbyName)
+    });
   });
 
   //when user sends a message to a lobby

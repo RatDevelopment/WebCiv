@@ -32,6 +32,10 @@ controllers.WCController = function ($scope, socket) {
     $.localStorage('lobby', lobbyName);
     $scope.mainview = 'lobby';
   });
+  
+  socket.on('lobby:checkName', function(data) {
+    $scope.newLobby.lobbyExists = data.lobbyExists;
+  });
 
   socket.on('message', function (data) {
     $scope.messages.push(data);
@@ -98,6 +102,9 @@ controllers.WCController = function ($scope, socket) {
     $scope.modal = partial;
     $('#modal').fadeIn(100);
     $('#wccontent').fadeTo(100, 0.5);
+    if (partial === 'newlobby') {
+      $scope.checkLobbyName($scope.newLobby.lobbyName);
+    }
   };
 
   $scope.closeModal = function() {
@@ -126,6 +133,12 @@ controllers.WCController = function ($scope, socket) {
 
   $scope.lobbyJoin = function(lobbyName) {
     socket.emit('lobby:join', {
+      lobbyName: lobbyName
+    });
+  };
+  
+  $scope.checkLobbyName = function(lobbyName) {
+    socket.emit('lobby:checkName', {
       lobbyName: lobbyName
     });
   };
