@@ -63,19 +63,7 @@ app.get('/partials/:name', routes.partials);
 app.get('*', routes.index);
 
 // ---- [ helper functions ] --------------------------------------------------
-// returns all socket rooms that aren't ''
-function getLobbies() {
-  var lobbies = [];
-  for (var key in io.sockets.manager.rooms) {
-    if (key.length > 0) {
-      var lobby = {};
-      lobby.name = key.substring(1, key.length);
-      lobbies.push(lobby);
-    }
-  }
-  return lobbies;
-}
-
+// gets list of lobby names in socket rooms
 function getLobbyNames() {
   var lobbies = [];
   for (var key in io.sockets.manager.rooms) {
@@ -116,24 +104,38 @@ function lobbyMessage(socket, data) {
 // broadcasts all lobbies to all users
 // should be called when there is a possible change in lobbies
 function broadcastLobbies() {
-  console.log("---broadcasting lobbies---");
-  var lobbies = getLobbies();
-  Lobby.findAll(function(err, data) {
-    for (var i in data) {
-      if (getLobbyNames().indexOf(data[i].name) === -1) {
-        Lobby.removeByName(data[i].name);
+  wclog('broadcasting lobbies');
+  Lobby.findAll(function(err, lobbies) {
+    var result = [];
+    for (var i in lobbies) {
+      if (getLobbyNames().indexOf(lobbies[i].name) === -1) {
+        Lobby.removeByName(lobbies[i].name);
+      } else {
+        var usersConnected = io.sockets.clients(lobbies[i].name).length;
+        var lobby = JSON.parse(JSON.stringify(lobbies[i]));
+        lobby.usersConnected = usersConnected;
+        result.push(lobby);
       }
+      io.sockets.emit('lobby:list', {
+        lobbies: result
+      });
     }
-  });
-  io.sockets.emit('lobby:list', {
-    lobbies: lobbies
   });
 }
 
 // emits lobbies to single user
 function emitLobbies(socket) {
-  socket.emit('lobby:list', {
-    lobbies: getLobbies()
+  var result = [];
+  Lobby.findAll(function(err, lobbies) {
+    for (var i in lobbies) {
+      var usersConnected = io.sockets.clients(lobbies[i].name).length;
+      var lobby = JSON.parse(JSON.stringify(lobbies[i]));
+      lobby.usersConnected = usersConnected;
+      result.push(lobby);
+    }
+    socket.emit('lobby:list', {
+      lobbies: result
+    });
   });
 }
 
@@ -225,18 +227,19 @@ io.sockets.on('connection', function (socket) {
         name: lobbyName,
         maxPlayers: maxPlayers
       });
-      lobby.save();
-      User.findByID(socket.id, function(err, data) {
-        var name = data.name;
-        wclog(name + " created " + lobbyName);
-        joinLobby(socket, {
-          lobbyName: lobbyName,
-          name: name
+      lobby.save(function() {
+        User.findByID(socket.id, function(err, data) {
+          var name = data.name;
+          wclog(name + " created " + lobbyName);
+          joinLobby(socket, {
+            lobbyName: lobbyName,
+            name: name
+          });
+          socket.emit('lobby:join', {
+            lobbyName: lobbyName
+          });
+          broadcastLobbies();
         });
-        socket.emit('lobby:join', {
-          lobbyName: lobbyName
-        });
-        broadcastLobbies();
       });
     } catch(err) {
       wcerror('new lobby error', err);
