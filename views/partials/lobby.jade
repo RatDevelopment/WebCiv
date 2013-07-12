@@ -1,4 +1,4 @@
-h1 {{ lobbyName }}
+h1 {{ lobby.name }}
 div#chatWindow.chatWindow.plainBorder
   div(ng-repeat='message in messages')
     span(ng-show='message.name')
@@ -10,3 +10,7 @@ form#messageForm(ng-submit='sendMessage(lobby.messageField)')
   input#messageSubmit(type='submit', value='Send')
 button(ng-click="lobbyLeave()")
   | Leave Lobby
+div#users
+  h2 Users in this lobby:
+  div(ng-repeat='user in lobby.users')
+    &bull; {{ user.name }}

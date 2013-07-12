@@ -3,7 +3,6 @@ var controllers = {};
 controllers.WCController = function ($scope, socket) {
   // ---- [ scope vars init ] -------------------------------------------------
   $scope.lobbies = [];
-  $scope.lobbyName = '';
   $scope.username = '';
 
   // views
@@ -26,11 +25,16 @@ controllers.WCController = function ($scope, socket) {
     }
   });
 
-  socket.on('lobby:join', function(data) {
-    var lobbyName = data.lobbyName;
-    $scope.lobbyName = data.lobbyName;
-    $.localStorage('lobby', lobbyName);
+  socket.on('lobby:join', function() {
     $scope.mainview = 'lobby';
+  });
+  
+  socket.on('lobby:update', function(data) {
+    var lobbyName = data.lobbyName;
+    var users = data.users;
+    $.localStorage('lobby', lobbyName);
+    $scope.lobby.name = lobbyName;
+    $scope.lobby.users = users;
   });
   
   socket.on('lobby:checkName', function(data) {
@@ -45,7 +49,7 @@ controllers.WCController = function ($scope, socket) {
 
   socket.on('messages:clear', function() {
     $scope.messages = [];
-    $scope.lobbyName = $.localStorage('lobby');
+    $scope.lobby.name = $.localStorage('lobby');
   });
 
   socket.on('error', function(data) {
