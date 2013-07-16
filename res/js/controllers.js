@@ -28,7 +28,7 @@ controllers.WCController = function ($scope, socket) {
   socket.on('lobby:join', function() {
     $scope.mainview = 'lobby';
   });
-  
+
   socket.on('lobby:update', function(data) {
     var lobbyName = data.lobbyName;
     var users = data.users;
@@ -36,7 +36,7 @@ controllers.WCController = function ($scope, socket) {
     $scope.lobby.name = lobbyName;
     $scope.lobby.users = users;
   });
-  
+
   socket.on('lobby:checkName', function(data) {
     $scope.newLobby.lobbyExists = data.lobbyExists;
   });
@@ -140,7 +140,7 @@ controllers.WCController = function ($scope, socket) {
       lobbyName: lobbyName
     });
   };
-  
+
   $scope.checkLobbyName = function(lobbyName) {
     socket.emit('lobby:checkName', {
       lobbyName: lobbyName
