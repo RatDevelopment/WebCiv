@@ -16,6 +16,10 @@ controllers.WCController = function ($scope, socket) {
   $scope.lobby = {};
   $scope.messages = [];
 
+  // lobby list
+  $scope.search = {};
+  $scope.search.showFull = true;
+
   // ---- [ socket functions ] ------------------------------------------------
   socket.on('lobby:list', function (data) {
     $scope.lobbies = data.lobbies;

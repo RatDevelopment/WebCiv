@@ -1,9 +1,14 @@
 #lobbies
   h1
     | Welcome to WebCiv, {{ username }}!
+  p Search Lobby Name:
+    input(ng-model='search.name', type='text')
+    | Show Full:
+    input(ng-model='search.showFull', type='checkbox')
   p
     button(ng-click='openModal("newlobby")') New Lobby
-  p(ng-repeat='lobby in lobbies')
+  p(ng-repeat='lobby in lobbies | filter:search.name',
+    ng-show='search.showFull && !lobby.show')
     | {{ lobby.name }} ({{ lobby.usersConnected }}/{{ lobby.maxPlayers}})
     span(ng-show='lobby.show')  -
       button.lobbyJoin(ng-click='lobbyJoin(lobby.name)')
