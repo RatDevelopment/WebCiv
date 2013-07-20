@@ -1,10 +1,7 @@
-// jshint unused:false
-
 // supplemental variables and functions
 
 // transition step for animation
 function transitionStep(current, target, step) {
-  // jshint unused:true
   var completed = true;
   if (current < target - step) {
     current += step;

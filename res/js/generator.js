@@ -1,5 +1,3 @@
-// jshint unused:false
-
 // "classes"
 function point2D(x, y) {
   var result = {};
@@ -19,7 +17,6 @@ function tile(x, y, type, neighbors, elevation) {
 }
 
 function getMap(rows, cols) {
-  // jshint unused:true
   var map = {
     rows: rows,
     cols: cols,

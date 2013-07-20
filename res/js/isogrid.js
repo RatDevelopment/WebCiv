@@ -1,5 +1,3 @@
-/* globals transitionStep, point2D */
-
 // $.fn.isogrid implementation
 $(function($) {
   $.fn.isogrid = function (options) {
@@ -16,6 +14,7 @@ $(function($) {
     settings.map.meshes = [];
 
     // ---- [ variables ] -----------------------------------------------------
+
     //constants
     var YSPACE = Math.floor(3*settings.tileSize/4);
     var SIDE = Math.floor(settings.tileSize/4);
@@ -61,6 +60,7 @@ $(function($) {
     var transitionFrameNum = transitionFrames;
 
     // ---- [ loading shaders ] -----------------------------------------------
+
     // shader variables
     var vertexShader = null;
     var fragmentShader = null;
@@ -87,6 +87,7 @@ $(function($) {
     }
 
     // ---- [ three.js init function ] ----------------------------------------
+
     function init() {
       // renderer
       renderer = new THREE.WebGLRenderer();
@@ -154,6 +155,7 @@ $(function($) {
     }
 
     // ---- [ three.js render function ] --------------------------------------
+
     function render() {
       requestAnimationFrame(render);
 
@@ -194,6 +196,7 @@ $(function($) {
     }
 
     // ---- [ functions ] -----------------------------------------------------
+
     // object will contain public methods to interact with the grid
     var object = {
       'focusTile': function(point) {
