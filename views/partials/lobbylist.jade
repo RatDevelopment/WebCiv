@@ -7,7 +7,7 @@
     input(ng-model='search.showFull', type='checkbox')
   p
     button(ng-click='openModal("newlobby")') New Lobby
-  p(ng-repeat='lobby in lobbies | filter:search.name',
+  p(ng-repeat='lobby in lobbies | filter:{name: search.name}',
     ng-show='lobby.usersConnected < lobby.maxPlayers || search.showFull')
     | {{ lobby.name }} ({{ lobby.usersConnected }}/{{ lobby.maxPlayers}})
     span(ng-show='lobby.canJoin')  -

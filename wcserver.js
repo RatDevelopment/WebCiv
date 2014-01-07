@@ -41,20 +41,6 @@ lobbySchema.statics.findAll = function(callback) {
   this.find({}, callback);
 };
 
-var lobbySchema = mongoose.Schema({
-  name: String,
-  maxPlayers: Number
-});
-lobbySchema.statics.findByName = function(name, callback) {
-  this.findOne({name: new RegExp(name, 'i')}, callback);
-};
-lobbySchema.statics.removeByName = function(name, callback) {
-  this.findOne({name: new RegExp(name, 'i')}, callback).remove();
-};
-lobbySchema.statics.findAll = function(callback) {
-  this.find({}, callback);
-};
-
 // ---- [ mongoose models ] ---------------------------------------------------
 var User = mongoose.model('User', userSchema);
 var Lobby = mongoose.model('Lobby', lobbySchema);
