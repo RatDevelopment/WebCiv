@@ -8,8 +8,8 @@
   p
     button(ng-click='openModal("newlobby")') New Lobby
   p(ng-repeat='lobby in lobbies | filter:search.name',
-    ng-show='search.showFull && !lobby.show')
+    ng-show='lobby.usersConnected < lobby.maxPlayers || search.showFull')
     | {{ lobby.name }} ({{ lobby.usersConnected }}/{{ lobby.maxPlayers}})
-    span(ng-show='lobby.show')  -
+    span(ng-show='lobby.canJoin')  -
       button.lobbyJoin(ng-click='lobbyJoin(lobby.name)')
         | Join

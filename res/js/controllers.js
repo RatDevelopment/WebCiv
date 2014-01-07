@@ -24,8 +24,7 @@ controllers.WCController = function ($scope, socket) {
   socket.on('lobby:list', function (data) {
     $scope.lobbies = data.lobbies;
     for (var i in $scope.lobbies) {
-      $scope.lobbies[i].show =
-        $scope.lobbies[i].usersConnected < $scope.lobbies[i].maxPlayers;
+      $scope.lobbies[i].canJoin = $scope.lobbies[i].usersConnected < $scope.lobbies[i].maxPlayers;
     }
   });
 
@@ -138,11 +137,9 @@ controllers.WCController = function ($scope, socket) {
   };
 
   $scope.lobbyLeave = function() {
-    var name = $.localStorage('username');
     var lobbyName = $.localStorage('lobby');
     $.localStorage('lobby', '');
     socket.emit('lobby:leave', {
-      name: name,
       lobbyName: lobbyName
     });
     $scope.mainview = 'lobbylist';
