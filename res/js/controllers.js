@@ -29,8 +29,15 @@ controllers.WCController = function ($scope, socket) {
     }
   });
 
-  socket.on('lobby:join', function() {
+  socket.on('lobby:join', function(data) {
+    var lobbyName = data.lobbyName;
+    $scope.lobby.name = lobbyName;
+    $.localStorage('lobby', lobbyName);
     $scope.mainview = 'lobby';
+  });
+
+  socket.on('lobby:checkName', function(data) {
+    $scope.newLobby.lobbyExists = data.lobbyExists;
   });
 
   socket.on('lobby:update', function(data) {
@@ -131,9 +138,11 @@ controllers.WCController = function ($scope, socket) {
   };
 
   $scope.lobbyLeave = function() {
+    var name = $.localStorage('username');
     var lobbyName = $.localStorage('lobby');
     $.localStorage('lobby', '');
     socket.emit('lobby:leave', {
+      name: name,
       lobbyName: lobbyName
     });
     $scope.mainview = 'lobbylist';

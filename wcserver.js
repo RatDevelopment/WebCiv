@@ -41,6 +41,20 @@ lobbySchema.statics.findAll = function(callback) {
   this.find({}, callback);
 };
 
+var lobbySchema = mongoose.Schema({
+  name: String,
+  maxPlayers: Number
+});
+lobbySchema.statics.findByName = function(name, callback) {
+  this.findOne({name: new RegExp(name, 'i')}, callback);
+};
+lobbySchema.statics.removeByName = function(name, callback) {
+  this.findOne({name: new RegExp(name, 'i')}, callback).remove();
+};
+lobbySchema.statics.findAll = function(callback) {
+  this.find({}, callback);
+};
+
 // ---- [ mongoose models ] ---------------------------------------------------
 var User = mongoose.model('User', userSchema);
 var Lobby = mongoose.model('Lobby', lobbySchema);
@@ -197,7 +211,9 @@ function joinLobby(socket, data) {
             message: name + ' has joined ' + lobbyName + '.'
           });
           getUsersInLobby(lobbyName, function(err, users) {
-            socket.emit('lobby:join');
+            socket.emit('lobby:join', {
+              lobbyName: lobbyName
+            });
             io.sockets.in(lobbyName).emit('lobby:update', {
               lobbyName: lobbyName,
               users: users
@@ -273,7 +289,9 @@ io.sockets.on('connection', function (socket) {
               name: name
             });
             getUsersInLobby(lobbyName, function(err, users) {
-              socket.emit('lobby:join');
+              socket.emit('lobby:join', {
+                lobbyName: lobbyName
+              });
               io.sockets.in(lobbyName).emit('lobby:update', {
                 lobbyName: lobbyName,
                 users: users
